@@ -17,12 +17,11 @@ public class SimpleDemo {
         //codecBenchmark();
     }
 
-    public static void clientServerTest() throws Exception {
+    public static void clientServerTest() throws Exception {// create a server and a client node
         Node server = NodeFactory.createServerNode(9874);
         Node client = NodeFactory.createClientNode("localhost", 9874);
 
-        Thread.sleep(1000);
-
+        // register the same channel on server and client
         Channel clientChannel = client.openChannel("test");
         clientChannel.addChannelListener(new ChannelListener() {
             @Override
@@ -40,15 +39,23 @@ public class SimpleDemo {
             }
         });
 
+        // wait a little while connection is negotiated
+        Thread.sleep(100);
+
+        // send a messsage with some data from client to server
         Bundle clientData = new Bundle();
         clientData.putString("string", "some payload from client");
         clientChannel.publish(new Message("Sent from client", clientData));
+
+        // send a messsage with some data from server to client
         Bundle serverData = new Bundle();
         serverData.putString("string", "some payload from server");
         serverChannel.publish(new Message("Sent from server", serverData));
 
-        Thread.sleep(1000);
+        // wait a little until messages are processed
+        Thread.sleep(100);
 
+        // close server and client
         client.close();
         server.close();
     }
