@@ -1,0 +1,81 @@
+package pubsub;
+
+option java_package = "de.fabmax.pubsub.extra";
+option java_outer_classname = "ProtobufMessage";
+
+message ProtoMessage {
+	required string channel = 1;
+	required string topic = 2;
+
+	enum Type {
+		BOOLEAN = 0;
+		BOOLEAN_ARRAY = 1;
+		BYTE = 2;
+		BYTE_ARRAY = 3;
+		CHAR = 4;
+		CHAR_ARRAY = 5;
+		DOUBLE = 6;
+		DOUBLE_ARRAY = 7;
+		FLOAT = 8;
+		FLOAT_ARRAY = 9;
+		INT = 10;
+		INT_ARRAY = 11;
+		LONG = 12;
+		LONG_ARRAY = 13;
+		SHORT = 14;
+		SHORT_ARRAY = 15;
+		STRING = 16;
+		STRING_ARRAY = 17;
+	}
+
+	message BoolArray {
+		repeated bool array = 1;
+	}
+
+	message DoubleArray {
+		repeated double array = 1;
+	}
+
+	message FloatArray {
+		repeated float array = 1;
+	}
+
+	message Sint32Array {
+		repeated sint32 array = 1;
+	}
+
+	message Sint64Array {
+		repeated sint64 array = 1;
+	}
+
+	message StringArray {
+		repeated string array = 1;
+	}
+
+	message Item {
+		required string key = 1;
+		required Type type = 2;
+
+		oneof value {
+			bool boolVal = 3;
+			BoolArray boolArray = 4;
+			bytes byteArray = 5;
+			double doubleVal = 6;
+			DoubleArray doubleArray = 7;
+			float floatVal = 8;
+			FloatArray floatArray = 9;
+			sint32 intVal = 10;
+			Sint32Array intArray = 11;
+			sint64 longVal = 12;
+			Sint64Array longArray = 13;
+			string stringVal = 14;
+			StringArray stringArray = 15;
+		}
+	}
+
+	message Bundle {
+		repeated Item data = 1;
+	}
+
+	optional Bundle data = 3;
+}
