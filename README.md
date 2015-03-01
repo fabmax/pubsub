@@ -6,6 +6,14 @@ Communication is organized by one server node and an arbitrary number of client 
 Nodes register channels and publish messages in these channels. All nodes registered to
 a particular channel receive the messages published in it.
 
+##Features:
+* Clients automatically recover from server connection loss
+* Two message de-/serialization codecs:
+  * Google protocol buffers based for fast and bandwith efficient message serialization
+  * JSON for easy debugging
+* Messages can have an arbitrary number of data arguments
+* Message can be directly mapped to handler methods using annotations, enabling some sort of RPC operation
+
 ##Hello world example:
 ```java
 // create a server and a client node
@@ -51,17 +59,11 @@ client.close();
 server.close();
 ```
 
-##Features:
-* Clients automatically recover from server connection loss
-* Two message de-/serialization codecs:
-  * Google protocol buffers based for fast and bandwith efficient message serialization
-  * JSON for easy debugging
-* Messages can have an arbitrary number of data arguments
-
 ##Planned features:
 * Auto-discovery of server nodes using dns-sd / zeroconf
 * Auto-nodes which can act as server or client, as required
 
+```
     Copyright 2013 Max Thiele
     
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,3 +77,4 @@ server.close();
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+```
