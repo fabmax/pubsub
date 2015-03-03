@@ -9,19 +9,17 @@
 	<description>Publish subscribe network lib for Java</description>
 
 	<build>
-		<!--<sourceDirectory>src</sourceDirectory>-->
-
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<version>3.2</version>
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
 				</configuration>
 			</plugin>
         	
-            <plugin> 
+            <!--<plugin> 
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId> 
                 <version>2.9.1</version>
@@ -34,8 +32,7 @@
                         </goals> 
                     </execution> 
                 </executions> 
-            </plugin>
-        	
+            </plugin>-->
   		</plugins>
 	</build>
    

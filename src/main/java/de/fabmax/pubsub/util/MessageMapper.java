@@ -4,8 +4,8 @@ import de.fabmax.pubsub.ChannelListener;
 import de.fabmax.pubsub.Message;
 import org.pmw.tinylog.Logger;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.Hashtable;
 
 /**
@@ -51,12 +51,18 @@ public class MessageMapper implements ChannelListener {
             mEndpoint = ep;
             mMethod = method;
 
-            Parameter[] params = method.getParameters();
+            Annotation[][] params = method.getParameterAnnotations();
             mParamNames = new String[params.length];
             mCallParams = new Object[params.length];
 
             for (int i = 0; i < params.length; i++) {
-                EndpointParameter epp = params[i].getAnnotation(EndpointParameter.class);
+                EndpointParameter epp = null;
+                for (Annotation anno : params[i]) {
+                    if (anno instanceof EndpointParameter) {
+                        epp = (EndpointParameter) anno;
+                        break;
+                    }
+                }
                 if (epp != null) {
                     mParamNames[i] = epp.name();
                 } else {
