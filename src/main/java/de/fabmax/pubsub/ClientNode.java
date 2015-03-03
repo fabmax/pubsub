@@ -86,7 +86,7 @@ public class ClientNode extends Node {
             while (!mClosed) {
                 try {
                     Socket sock = new Socket(mServerAddr, mServerPort);
-                    mServerConnection = new Connection(sock, Codec.defaultCodecFactory.createCodec());
+                    mServerConnection = new Connection(sock, Codec.defaultCodecFactory);
                     mServerConnection.open();
                     onConnect();
                     mServerConnection.setReceiveListener(ClientNode.this);

@@ -14,7 +14,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 class Connection {
 
     private Socket mSocket;
-    private final Codec mCodec;
 
     private InputStream mInStream;
     private OutputStream mOutStream;
@@ -24,15 +23,14 @@ class Connection {
 
     private boolean mClosed = false;
 
-    public Connection(Socket socket, Codec codec) throws IOException {
+    public Connection(Socket socket, Codec.CodecFactory<?> codecFactory) throws IOException {
         mSocket = socket;
-        mCodec = codec;
 
         mInStream = mSocket.getInputStream();
         mOutStream = mSocket.getOutputStream();
 
-        mReceiver = new ConnectionReceiver(this);
-        mSender = new ConnectionSender(this);
+        mReceiver = new ConnectionReceiver(this, codecFactory);
+        mSender = new ConnectionSender(this, codecFactory);
     }
 
     public void setReceiveListener(ReceiveListener receiveListener) {
@@ -55,15 +53,11 @@ class Connection {
         return mOutStream;
     }
 
-    protected Codec getCodec() {
-        return mCodec;
-    }
-
     public void sendMessage(Message message) {
         if (mClosed) {
             throw new IllegalStateException("ClientHandler is closed");
         }
-        mSender.sendData(mCodec.encodeMessage(message));
+        mSender.sendData(message);
     }
 
     public void open() {
@@ -111,11 +105,13 @@ class Connection {
     }
 
     private static class ConnectionReceiver extends Thread {
+        private final Codec mCodec;
         private final Connection mConnection;
         private ReceiveListener mReceiveListener;
 
-        public ConnectionReceiver(Connection connection) {
+        public ConnectionReceiver(Connection connection, Codec.CodecFactory<?> codecFactory) {
             mConnection = connection;
+            mCodec = codecFactory.createCodec();
         }
 
         public void setReceiveListener(ReceiveListener receiveListener) {
@@ -127,13 +123,12 @@ class Connection {
             try {
                 byte[] buffer = new byte[4096];
                 InputStream inStream = mConnection.getInputStream();
-                Codec codec = mConnection.getCodec();
                 while (!mConnection.isClosed()) {
                     int len = inStream.read(buffer);
                     if (len > 0) {
-                        codec.decodeData(buffer, 0, len);
-                        while (codec.hasMessage() && mReceiveListener != null) {
-                            Message msg = codec.getNextMessage();
+                        mCodec.decodeData(buffer, 0, len);
+                        while (mCodec.hasMessage() && mReceiveListener != null) {
+                            Message msg = mCodec.getNextMessage();
                             mReceiveListener.messageReceived(msg);
                         }
                     } else if (len < 0) {
@@ -152,15 +147,17 @@ class Connection {
     }
 
     private static class ConnectionSender extends Thread {
-        private final ArrayBlockingQueue<byte[]> mSendQueue = new ArrayBlockingQueue<>(10);
+        private final ArrayBlockingQueue<Message> mSendQueue = new ArrayBlockingQueue<>(10);
         private final Connection mConnection;
+        private final Codec mCodec;
 
-        public ConnectionSender(Connection connection) {
+        public ConnectionSender(Connection connection, Codec.CodecFactory codecFactory) {
             mConnection = connection;
+            mCodec = codecFactory.createCodec();
         }
 
-        public void sendData(byte[] data) {
-            if (!mSendQueue.offer(data)) {
+        public void sendData(Message message) {
+            if (!mSendQueue.offer(message)) {
                 Logger.error("Unable to send data: Client send queue is full");
             }
         }
@@ -169,7 +166,7 @@ class Connection {
         public void run() {
             try {
                 while (!mConnection.isClosed()) {
-                    byte[] data = mSendQueue.take();
+                    byte[] data = mCodec.encodeMessage(mSendQueue.take());
                     mConnection.getOutputStream().write(data);
                 }
             } catch (IOException | InterruptedException e) {
