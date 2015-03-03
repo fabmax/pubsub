@@ -23,7 +23,7 @@ class Connection {
 
     private boolean mClosed = false;
 
-    public Connection(Socket socket, Codec.CodecFactory<?> codecFactory) throws IOException {
+    public Connection(Socket socket, Codec.CodecFactory<?> codecFactory, boolean isDaemon) throws IOException {
         mSocket = socket;
 
         mInStream = mSocket.getInputStream();
@@ -31,6 +31,8 @@ class Connection {
 
         mReceiver = new ConnectionReceiver(this, codecFactory);
         mSender = new ConnectionSender(this, codecFactory);
+        mReceiver.setDaemon(isDaemon);
+        mSender.setDaemon(isDaemon);
     }
 
     public void setReceiveListener(ReceiveListener receiveListener) {

@@ -3,6 +3,7 @@ package de.fabmax.pubsub.demo;
 import de.fabmax.pubsub.*;
 import de.fabmax.pubsub.JsonCodec;
 import de.fabmax.pubsub.extra.ProtobufCodec;
+import de.fabmax.pubsub.util.LogConfigurator;
 
 import java.util.Arrays;
 
@@ -12,6 +13,8 @@ import java.util.Arrays;
 public class SimpleDemo {
 
     public static void main(String[] args) throws Exception {
+        LogConfigurator.configureLogging();
+
         clientServerTest();
         //messageTest();
         //codecBenchmark();
@@ -23,6 +26,9 @@ public class SimpleDemo {
 
         // register the same channel on server and client
         Channel clientChannel = client.openChannel("test");
+        Channel serverChannel = server.openChannel("test");
+
+        // add channel listeners to receive messages on client and server side
         clientChannel.addChannelListener(new ChannelListener() {
             @Override
             public void onMessageReceived(Message message) {
@@ -30,7 +36,6 @@ public class SimpleDemo {
                 System.out.println("  " + message.getData().getString("string"));
             }
         });
-        Channel serverChannel = server.openChannel("test");
         serverChannel.addChannelListener(new ChannelListener() {
             @Override
             public void onMessageReceived(Message message) {
@@ -44,13 +49,13 @@ public class SimpleDemo {
 
         // send a messsage with some data from client to server
         Bundle clientData = new Bundle();
-        clientData.putString("string", "some payload from client");
-        clientChannel.publish(new Message("Sent from client", clientData));
+        clientData.putString("string", "Hello World from client");
+        clientChannel.publish(new Message("hot stuff", clientData));
 
         // send a messsage with some data from server to client
         Bundle serverData = new Bundle();
-        serverData.putString("string", "some payload from server");
-        serverChannel.publish(new Message("Sent from server", serverData));
+        serverData.putString("string", "Hello World from server");
+        serverChannel.publish(new Message("hot stuff", serverData));
 
         // wait a little until messages are processed
         Thread.sleep(100);

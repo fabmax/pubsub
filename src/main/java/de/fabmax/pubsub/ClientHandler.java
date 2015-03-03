@@ -21,8 +21,8 @@ public class ClientHandler implements ChannelProvider, ReceiveListener {
 
     private final HashSet<String> mRegisteredChannels = new HashSet<>();
 
-    public ClientHandler(ServerNode server, Socket clientSock) throws IOException {
-        mClientConnection = new Connection(clientSock, Codec.defaultCodecFactory);
+    public ClientHandler(ServerNode server, Socket clientSock, boolean isDaemon) throws IOException {
+        mClientConnection = new Connection(clientSock, Codec.defaultCodecFactory, isDaemon);
         mClientAddress = clientSock.getInetAddress().getHostName() + ":" + clientSock.getLocalPort();
         mServer = server;
         mControlChannel = new Channel(this, ControlMessages.CONTROL_CHANNEL_ID);

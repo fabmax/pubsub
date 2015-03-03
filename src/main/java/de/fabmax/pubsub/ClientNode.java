@@ -10,10 +10,13 @@ import java.net.Socket;
  */
 public class ClientNode extends Node {
 
+    private final boolean mIsDaemon;
     private final ConnectThread mConnector;
     private final Channel mControlChannel;
 
-    public ClientNode(String serverAddr, int serverPort) {
+    public ClientNode(String serverAddr, int serverPort, boolean isDaemon) {
+        mIsDaemon = isDaemon;
+
         mConnector = new ConnectThread(serverAddr, serverPort);
         mControlChannel = super.openChannel(ControlMessages.CONTROL_CHANNEL_ID);
         mControlChannel.addChannelListener(new ControlChannelListener());
@@ -69,6 +72,7 @@ public class ClientNode extends Node {
         public ConnectThread(String serverAddr, int serverPort) {
             mServerAddr = serverAddr;
             mServerPort = serverPort;
+            setDaemon(mIsDaemon);
             start();
         }
 
@@ -86,7 +90,7 @@ public class ClientNode extends Node {
             while (!mClosed) {
                 try {
                     Socket sock = new Socket(mServerAddr, mServerPort);
-                    mServerConnection = new Connection(sock, Codec.defaultCodecFactory);
+                    mServerConnection = new Connection(sock, Codec.defaultCodecFactory, mIsDaemon);
                     mServerConnection.open();
                     onConnect();
                     mServerConnection.setReceiveListener(ClientNode.this);

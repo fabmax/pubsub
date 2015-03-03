@@ -13,13 +13,18 @@ import java.util.List;
  */
 public class ServerNode extends Node {
 
+    private final boolean mIsDaemon;
     private final ClientAcceptor mClientAcceptor;
     private final List<ClientHandler> mClients = new ArrayList<>();
 
     private final HashSet<String> mRegisteredChannels = new HashSet<>();
 
-    public ServerNode(int port) throws IOException {
+    public ServerNode(int port, boolean isDaemon) throws IOException {
+        mIsDaemon = isDaemon;
+
         mClientAcceptor = new ClientAcceptor(this, port);
+        mClientAcceptor.setDaemon(mIsDaemon);
+        mClientAcceptor.start();
 
         Logger.debug("ServerNode started");
     }
@@ -29,7 +34,7 @@ public class ServerNode extends Node {
                 ":" + clientSock.getLocalPort());
         try {
             synchronized (mClients) {
-                ClientHandler handler = new ClientHandler(this, clientSock);
+                ClientHandler handler = new ClientHandler(this, clientSock, mIsDaemon);
                 mClients.add(handler);
             }
         } catch (IOException e) {

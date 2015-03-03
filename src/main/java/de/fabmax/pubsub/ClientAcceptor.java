@@ -20,9 +20,7 @@ class ClientAcceptor extends Thread implements Closeable {
     public ClientAcceptor(ServerNode server, int serverPort) throws IOException {
         mServer = server;
         mServerSock = new ServerSocket(serverPort);
-
         mClosed = false;
-        start();
     }
 
     @Override
