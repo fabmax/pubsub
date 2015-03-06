@@ -1,4 +1,4 @@
-package de.fabmax.pubsub.demo;
+package de.fabmax.pubsub.samples;
 
 import de.fabmax.pubsub.*;
 import de.fabmax.pubsub.JsonCodec;
@@ -20,7 +20,8 @@ public class SimpleDemo {
         //codecBenchmark();
     }
 
-    public static void clientServerTest() throws Exception {// create a server and a client node
+    public static void clientServerTest() throws Exception {
+        // create a server and a client node
         Node server = NodeFactory.createServerNode(9874);
         Node client = NodeFactory.createClientNode("localhost", 9874);
 

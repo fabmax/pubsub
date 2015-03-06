@@ -1,0 +1,23 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+version = '1.0.0-SNAPSHOT'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'PubSub',
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.tinylog:tinylog:1.0-rc-3'
+    compile 'org.json:json:20140107'
+    compile 'com.google.protobuf:protobuf-java:2.6.1'
+    //compile 'javax.jmdns:jmdns:3.4.1'
+}
+
