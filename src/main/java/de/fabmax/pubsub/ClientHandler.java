@@ -12,7 +12,7 @@ import java.util.HashSet;
 /**
  * Created by Max on 24.02.2015.
  */
-public class ClientHandler implements ChannelProvider, ReceiveListener {
+public class ClientHandler implements ChannelProvider, MessageListener {
 
     private final ServerNode mServer;
     private final Connection mClientConnection;
@@ -23,12 +23,12 @@ public class ClientHandler implements ChannelProvider, ReceiveListener {
 
     public ClientHandler(ServerNode server, Socket clientSock, boolean isDaemon) throws IOException {
         mClientConnection = new Connection(clientSock, Codec.defaultCodecFactory, isDaemon);
-        mClientAddress = clientSock.getInetAddress().getHostName() + ":" + clientSock.getLocalPort();
+        mClientAddress = clientSock.getRemoteSocketAddress().toString();
         mServer = server;
         mControlChannel = new Channel(this, ControlMessages.CONTROL_CHANNEL_ID);
-        mControlChannel.addChannelListener(new MessageMapper(this));
+        mControlChannel.addMessageListener(new MessageMapper(this));
 
-        mClientConnection.setReceiveListener(this);
+        mClientConnection.setMessageListener(this);
         mClientConnection.open();
     }
 
@@ -44,7 +44,7 @@ public class ClientHandler implements ChannelProvider, ReceiveListener {
     }
 
     @Override
-    public void messageReceived(Message message) {
+    public void onMessageReceived(Message message) {
         if (message.getChannelId().equals(ControlMessages.CONTROL_CHANNEL_ID)) {
             mControlChannel.onMessageReceived(message);
         } else {

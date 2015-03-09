@@ -19,7 +19,7 @@ public class ClientNode extends Node {
 
         mConnector = new ConnectThread(serverAddr, serverPort);
         mControlChannel = super.openChannel(ControlMessages.CONTROL_CHANNEL_ID);
-        mControlChannel.addChannelListener(new ControlChannelListener());
+        mControlChannel.addMessageListener(new ControlChannelListener());
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ClientNode extends Node {
         Logger.debug("Server disconnected");
     }
 
-    private class ControlChannelListener implements ChannelListener {
+    private class ControlChannelListener implements MessageListener {
         @Override
         public void onMessageReceived(Message message) {
             Logger.debug("Control message received: topic=" + message.getTopic());
@@ -93,7 +93,7 @@ public class ClientNode extends Node {
                     mServerConnection = new Connection(sock, Codec.defaultCodecFactory, mIsDaemon);
                     mServerConnection.open();
                     onConnect();
-                    mServerConnection.setReceiveListener(ClientNode.this);
+                    mServerConnection.setMessageListener(ClientNode.this);
                     mServerConnection.waitForClose();
                     mServerConnection = null;
                     onDisconnect();

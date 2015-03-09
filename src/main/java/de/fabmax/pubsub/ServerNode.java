@@ -1,5 +1,6 @@
 package de.fabmax.pubsub;
 
+import de.fabmax.pubsub.util.DnsServiceAdvertiser;
 import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
@@ -13,15 +14,22 @@ import java.util.List;
  */
 public class ServerNode extends Node {
 
+    /** Type string used for DNS service discovery / zeroconf */
+    public static final String DNS_SD_TYPE = "_pubsub._tcp.local.";
+
     private final boolean mIsDaemon;
+    private final int mPort;
     private final ClientAcceptor mClientAcceptor;
     private final List<ClientHandler> mClients = new ArrayList<>();
 
     private final HashSet<String> mRegisteredChannels = new HashSet<>();
 
+    private DnsServiceAdvertiser mServiceAdvertiser = null;
+
     public ServerNode(int port, boolean isDaemon) throws IOException {
         mIsDaemon = isDaemon;
 
+        mPort = port;
         mClientAcceptor = new ClientAcceptor(this, port);
         mClientAcceptor.setDaemon(mIsDaemon);
         mClientAcceptor.start();
@@ -30,12 +38,11 @@ public class ServerNode extends Node {
     }
 
     protected void clientConnected(Socket clientSock) {
-        Logger.debug("Client connected: " + clientSock.getInetAddress().getHostAddress() +
-                ":" + clientSock.getLocalPort());
         try {
             synchronized (mClients) {
                 ClientHandler handler = new ClientHandler(this, clientSock, mIsDaemon);
                 mClients.add(handler);
+                Logger.debug("Client connected: " + handler.getClientAddress());
             }
         } catch (IOException e) {
             Logger.error("Unable to initialize client connection", e);
@@ -58,13 +65,27 @@ public class ServerNode extends Node {
             }
         }
         if (mRegisteredChannels.contains(message.getChannelId())) {
-            messageReceived(message);
+            onMessageReceived(message);
+        }
+    }
+
+    public void enableServiceAdvertising() {
+        if (mServiceAdvertiser == null) {
+            mServiceAdvertiser = new DnsServiceAdvertiser(DNS_SD_TYPE, mPort);
+        }
+    }
+
+    public void disableServiceAdvertising() {
+        if (mServiceAdvertiser != null) {
+            mServiceAdvertiser.close();
+            mServiceAdvertiser = null;
         }
     }
 
     @Override
     public void close() {
         mClientAcceptor.close();
+        disableServiceAdvertising();
 
         synchronized (mClients) {
             for (ClientHandler handler : mClients) {

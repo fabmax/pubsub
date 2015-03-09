@@ -1,7 +1,7 @@
 package de.fabmax.pubsub.util;
 
-import de.fabmax.pubsub.ChannelListener;
 import de.fabmax.pubsub.Message;
+import de.fabmax.pubsub.MessageListener;
 import org.pmw.tinylog.Logger;
 
 import java.lang.annotation.Annotation;
@@ -11,7 +11,7 @@ import java.util.Hashtable;
 /**
  * Created by Max on 25.02.2015.
  */
-public class MessageMapper implements ChannelListener {
+public class MessageMapper implements MessageListener {
 
     private final Object mReceiver;
     private final Hashtable<String, MessageMethodMapper> mEndpoints = new Hashtable<>();

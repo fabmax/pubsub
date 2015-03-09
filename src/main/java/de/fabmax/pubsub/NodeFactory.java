@@ -12,19 +12,19 @@ import java.io.IOException;
  */
 public class NodeFactory {
 
-    public static Node createServerNode(int port) throws IOException {
+    public static ServerNode createServerNode(int port) throws IOException {
         return createServerNode(port, false);
     }
 
-    public static Node createServerNode(int port, boolean isDaemon) throws IOException {
+    public static ServerNode createServerNode(int port, boolean isDaemon) throws IOException {
         return new ServerNode(port, isDaemon);
     }
 
-    public static Node createClientNode(String serverAddr, int port) {
+    public static ClientNode createClientNode(String serverAddr, int port) {
         return createClientNode(serverAddr, port, false);
     }
 
-    public static Node createClientNode(String serverAddr, int port, boolean isDaemon) {
+    public static ClientNode createClientNode(String serverAddr, int port, boolean isDaemon) {
         return new ClientNode(serverAddr, port, isDaemon);
     }
 

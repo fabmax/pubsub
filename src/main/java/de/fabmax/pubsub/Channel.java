@@ -11,7 +11,7 @@ public class Channel {
     private final ChannelProvider mProvider;
     private final String mChannelId;
 
-    private final List<ChannelListener> mChannelListeners = new ArrayList<>();
+    private final List<MessageListener> mChannelListeners = new ArrayList<>();
 
     protected Channel(ChannelProvider provider, String channelId) {
         mProvider = provider;
@@ -20,19 +20,19 @@ public class Channel {
 
     protected void onMessageReceived(Message message) {
         synchronized (mChannelListeners) {
-            for (ChannelListener l : mChannelListeners) {
+            for (MessageListener l : mChannelListeners) {
                 l.onMessageReceived(message);
             }
         }
     }
 
-    public void addChannelListener(ChannelListener listener) {
+    public void addMessageListener(MessageListener listener) {
         synchronized (mChannelListeners) {
             mChannelListeners.add(listener);
         }
     }
 
-    public void removeChannelListener(ChannelListener listener) {
+    public void removeMessageListener(MessageListener listener) {
         synchronized (mChannelListeners) {
             mChannelListeners.remove(listener);
         }

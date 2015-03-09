@@ -30,14 +30,14 @@ public class SimpleDemo {
         Channel serverChannel = server.openChannel("test");
 
         // add channel listeners to receive messages on client and server side
-        clientChannel.addChannelListener(new ChannelListener() {
+        clientChannel.addMessageListener(new MessageListener() {
             @Override
             public void onMessageReceived(Message message) {
                 System.out.println("Client received message: [" + message.getChannelId() + "]: " + message.getTopic());
                 System.out.println("  " + message.getData().getString("string"));
             }
         });
-        serverChannel.addChannelListener(new ChannelListener() {
+        serverChannel.addMessageListener(new MessageListener() {
             @Override
             public void onMessageReceived(Message message) {
                 System.out.println("Server received message: [" + message.getChannelId() + "]: " + message.getTopic());

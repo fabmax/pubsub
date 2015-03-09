@@ -1,13 +1,11 @@
 package de.fabmax.pubsub;
 
-import de.fabmax.pubsub.extra.ProtobufCodec;
-
 import java.util.HashMap;
 
 /**
  * Created by Max on 24.02.2015.
  */
-public abstract class Node implements ChannelProvider, ReceiveListener {
+public abstract class Node implements ChannelProvider, MessageListener {
 
     protected final HashMap<String, Channel> mChannels = new HashMap<>();
 
@@ -17,7 +15,7 @@ public abstract class Node implements ChannelProvider, ReceiveListener {
     public abstract void publish(Message message);
 
     @Override
-    public void messageReceived(Message message) {
+    public void onMessageReceived(Message message) {
         Channel channel = mChannels.get(message.getChannelId());
         if (channel != null) {
             channel.onMessageReceived(message);

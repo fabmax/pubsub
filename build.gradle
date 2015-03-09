@@ -18,6 +18,6 @@ dependencies {
     compile 'org.tinylog:tinylog:1.0-rc-3'
     compile 'org.json:json:20140107'
     compile 'com.google.protobuf:protobuf-java:2.6.1'
-    //compile 'javax.jmdns:jmdns:3.4.1'
+    compile 'javax.jmdns:jmdns:3.4.1'
 }
 

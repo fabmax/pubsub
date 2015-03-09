@@ -35,8 +35,8 @@ class Connection {
         mSender.setDaemon(isDaemon);
     }
 
-    public void setReceiveListener(ReceiveListener receiveListener) {
-        mReceiver.setReceiveListener(receiveListener);
+    public void setMessageListener(MessageListener messageListener) {
+        mReceiver.setMessageListener(messageListener);
     }
 
     public void waitForClose() throws InterruptedException {
@@ -109,15 +109,15 @@ class Connection {
     private static class ConnectionReceiver extends Thread {
         private final Codec mCodec;
         private final Connection mConnection;
-        private ReceiveListener mReceiveListener;
+        private MessageListener mMessageListener;
 
         public ConnectionReceiver(Connection connection, Codec.CodecFactory<?> codecFactory) {
             mConnection = connection;
             mCodec = codecFactory.createCodec();
         }
 
-        public void setReceiveListener(ReceiveListener receiveListener) {
-            mReceiveListener = receiveListener;
+        public void setMessageListener(MessageListener messageListener) {
+            mMessageListener = messageListener;
         }
 
         @Override
@@ -129,9 +129,9 @@ class Connection {
                     int len = inStream.read(buffer);
                     if (len > 0) {
                         mCodec.decodeData(buffer, 0, len);
-                        while (mCodec.hasMessage() && mReceiveListener != null) {
+                        while (mCodec.hasMessage() && mMessageListener != null) {
                             Message msg = mCodec.getNextMessage();
-                            mReceiveListener.messageReceived(msg);
+                            mMessageListener.onMessageReceived(msg);
                         }
                     } else if (len < 0) {
                         // connection closed
