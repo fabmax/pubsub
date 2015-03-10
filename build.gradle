@@ -3,11 +3,14 @@ apply plugin: 'java'
 sourceCompatibility = 1.7
 version = '1.0.0-SNAPSHOT'
 
-jar {
+task fatJar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': 'PubSub',
                    'Implementation-Version': version
     }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 repositories {

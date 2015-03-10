@@ -3,7 +3,9 @@ package de.fabmax.pubsub;
 import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * Created by Max on 24.02.2015.
@@ -14,7 +16,11 @@ public class ClientNode extends Node {
     private final ConnectThread mConnector;
     private final Channel mControlChannel;
 
-    public ClientNode(String serverAddr, int serverPort, boolean isDaemon) {
+    public ClientNode(String serverAddr, int serverPort, boolean isDaemon) throws UnknownHostException {
+        this(InetAddress.getByName(serverAddr), serverPort, isDaemon);
+    }
+
+    public ClientNode(InetAddress serverAddr, int serverPort, boolean isDaemon) {
         mIsDaemon = isDaemon;
 
         mConnector = new ConnectThread(serverAddr, serverPort);
@@ -42,7 +48,7 @@ public class ClientNode extends Node {
     }
 
     private void onConnect() {
-        Logger.debug("Server connected");
+        Logger.debug("Connected to server");
 
         // send registered channels to server
         for (String channelId : mChannels.keySet()) {
@@ -51,7 +57,7 @@ public class ClientNode extends Node {
     }
 
     private void onDisconnect() {
-        Logger.debug("Server disconnected");
+        Logger.debug("Disconnected from server");
     }
 
     private class ControlChannelListener implements MessageListener {
@@ -62,14 +68,14 @@ public class ClientNode extends Node {
     }
 
     private class ConnectThread extends Thread {
-        private String mServerAddr;
+        private InetAddress mServerAddr;
         private int mServerPort;
 
         private Connection mServerConnection;
 
         private boolean mClosed = false;
 
-        public ConnectThread(String serverAddr, int serverPort) {
+        public ConnectThread(InetAddress serverAddr, int serverPort) {
             mServerAddr = serverAddr;
             mServerPort = serverPort;
             setDaemon(mIsDaemon);

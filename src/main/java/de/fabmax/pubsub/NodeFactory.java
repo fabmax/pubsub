@@ -2,10 +2,12 @@ package de.fabmax.pubsub;
 
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
+import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
 import org.pmw.tinylog.writers.Writer;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 
 /**
  * Created by Max on 24.02.2015.
@@ -25,7 +27,12 @@ public class NodeFactory {
     }
 
     public static ClientNode createClientNode(String serverAddr, int port, boolean isDaemon) {
-        return new ClientNode(serverAddr, port, isDaemon);
+        try {
+            return new ClientNode(serverAddr, port, isDaemon);
+        } catch (UnknownHostException e) {
+            Logger.error(e.getClass().getName() + ": " + e.getMessage());
+            return null;
+        }
     }
 
 }

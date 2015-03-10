@@ -10,7 +10,7 @@ import java.net.Socket;
 import java.util.HashSet;
 
 /**
- * Created by Max on 24.02.2015.
+ * ClientHandler has to be public for reflections used by {@link de.fabmax.pubsub.util.MessageMapper} to work.
  */
 public class ClientHandler implements ChannelProvider, MessageListener {
 
@@ -36,10 +36,12 @@ public class ClientHandler implements ChannelProvider, MessageListener {
         return mClientAddress;
     }
 
-    public void close() {
+    /**
+     * Is called by {@link de.fabmax.pubsub.ServerNode} when server is closed.
+     */
+    void close() {
         if (!mClientConnection.isClosed()) {
             mClientConnection.close();
-            mServer.clientDisconnected(this);
         }
     }
 

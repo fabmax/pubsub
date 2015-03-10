@@ -4,6 +4,7 @@ import de.fabmax.pubsub.util.DnsServiceAdvertiser;
 import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,6 +17,8 @@ public class ServerNode extends Node {
 
     /** Type string used for DNS service discovery / zeroconf */
     public static final String DNS_SD_TYPE = "_pubsub._tcp.local.";
+    /** Default port used for pubsub protocol */
+    public static final int DEFAULT_PORT = 9874;
 
     private final boolean mIsDaemon;
     private final int mPort;
@@ -69,14 +72,10 @@ public class ServerNode extends Node {
         }
     }
 
-    public void enableServiceAdvertising() {
-        if (mServiceAdvertiser == null) {
+    public void setServiceAdvertisingEnabled(boolean enabled) {
+        if (enabled && mServiceAdvertiser == null) {
             mServiceAdvertiser = new DnsServiceAdvertiser(DNS_SD_TYPE, mPort);
-        }
-    }
-
-    public void disableServiceAdvertising() {
-        if (mServiceAdvertiser != null) {
+        } else if (!enabled && mServiceAdvertiser != null) {
             mServiceAdvertiser.close();
             mServiceAdvertiser = null;
         }
@@ -85,7 +84,7 @@ public class ServerNode extends Node {
     @Override
     public void close() {
         mClientAcceptor.close();
-        disableServiceAdvertising();
+        setServiceAdvertisingEnabled(false);
 
         synchronized (mClients) {
             for (ClientHandler handler : mClients) {

@@ -46,7 +46,7 @@ public class SimpleDemo {
         });
 
         // wait a little while connection is negotiated
-        Thread.sleep(100);
+        Thread.sleep(500);
 
         // send a messsage with some data from client to server
         Bundle clientData = new Bundle();
@@ -59,7 +59,7 @@ public class SimpleDemo {
         serverChannel.publish(new Message("hot stuff", serverData));
 
         // wait a little until messages are processed
-        Thread.sleep(100);
+        Thread.sleep(500);
 
         // close server and client
         client.close();

@@ -9,6 +9,7 @@ import javax.jmdns.ServiceListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -67,12 +68,7 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
     }
 
     private void enumerateServices(JmDNS dns) {
-        Logger.debug("Enumerating services");
-        long t = System.currentTimeMillis();
         ServiceInfo[] services = dns.list(mServiceType);
-        t = System.currentTimeMillis() - t;
-        Logger.debug(String.format(Locale.ENGLISH, "Enumeration finished, got %d results (took %.3f s)",
-                services.length, t / 1e3f));
 
         synchronized (mServices) {
             mServices.clear();
@@ -91,9 +87,12 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
         JmDNS dns = null;
 
         try {
-            dns = JmDNS.create();
+            dns = JmDNS.create(DnsConfiguration.getDiscoveryBindAddress());
             dns.addServiceListener(mServiceType, this);
-            Logger.debug("Service discovery started");
+            Logger.info("Service discovery started, bind address: " + DnsConfiguration.getDiscoveryBindAddress());
+
+            // do initial discovery, to force fireDiscoveryUpdate(), even if no services are found
+            enumerateServices(dns);
         } catch (IOException e) {
             Logger.error("Failed starting service discovery: " + e.getClass().getName() + ": " + e.getMessage());
         }
@@ -126,20 +125,20 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
 
     @Override
     public void serviceAdded(ServiceEvent event) {
-        Logger.debug("service added: " + event);
         // do nothing, the interesting stuff comes when service is resolved
     }
 
     @Override
     public void serviceRemoved(ServiceEvent event) {
-        Logger.debug("service removed: " + event);
+        Logger.debug("Service removed: " + event.getName() + "[" + event.getType() + "]");
         // there was a service removed, but we don't really know which one, enumerate all remaining services
         triggerFullEnumeration();
     }
 
     @Override
     public void serviceResolved(ServiceEvent event) {
-        Logger.debug("service resolved: " + event);
+        String addrs = Arrays.toString(event.getInfo().getInetAddresses()) + ", port:" + event.getInfo().getPort();
+        Logger.debug("Service resolved: " + event.getName() + "[" + event.getType() + "]: " + addrs);
         DiscoveredService service = DiscoveredService.create(event.getInfo());
         if (service != null) {
             synchronized (mServices) {
@@ -156,20 +155,44 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
     public static class DiscoveredService {
         public final String type;
         public final InetAddress address;
+        public final int port;
 
-        private DiscoveredService(String type, InetAddress address) {
+        private DiscoveredService(String type, InetAddress address, int port) {
             this.type = type;
             this.address = address;
+            this.port = port;
         }
 
         private static DiscoveredService create(ServiceInfo info) {
             InetAddress[] addrs = info.getInetAddresses();
             if (addrs != null && addrs.length > 0) {
-                return new DiscoveredService(info.getType(), addrs[0]);
+                return new DiscoveredService(info.getType(), addrs[0], info.getPort());
             } else {
                 return null;
             }
 
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            DiscoveredService that = (DiscoveredService) o;
+
+            if (port != that.port) return false;
+            if (!address.equals(that.address)) return false;
+            if (!type.equals(that.type)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = type.hashCode();
+            result = 31 * result + address.hashCode();
+            result = 31 * result + port;
+            return result;
         }
     }
 }

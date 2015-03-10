@@ -5,6 +5,10 @@ import org.pmw.tinylog.Logger;
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 
 /**
  * Created by Max on 07.03.2015.
@@ -37,9 +41,10 @@ public class DnsServiceAdvertiser implements Runnable {
         JmDNS dns = null;
 
         try {
-            dns = JmDNS.create();
+            dns = JmDNS.create(DnsConfiguration.getDiscoveryBindAddress());
             dns.registerService(info);
-            Logger.debug("Service advertising started");
+            Logger.info("Service advertising started, type=" + mAdvertiseType + ", port=" + mAdvertisePort +
+                    ", bind address: " + DnsConfiguration.getDiscoveryBindAddress());
         } catch (IOException e) {
             Logger.error("Failed advertising service: " + e.getClass().getName() + ": " + e.getMessage());
         }
