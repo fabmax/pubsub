@@ -34,15 +34,15 @@ public class SimpleDemo {
         clientChannel.addMessageListener(new MessageListener() {
             @Override
             public void onMessageReceived(Message message) {
-                Logger.info("Client received message: [" + message.getChannelId() + "]: " + message.getTopic());
-                Logger.info("  " + message.getData().getString("string"));
+                Logger.info("Client received message: [" + message.getChannelId() + ":" + message.getTopic() +
+                        "]:  " + message.getData().getString("string"));
             }
         });
         serverChannel.addMessageListener(new MessageListener() {
             @Override
             public void onMessageReceived(Message message) {
-                Logger.info("Server received message: [" + message.getChannelId() + "]: " + message.getTopic());
-                Logger.info("  " + message.getData().getString("string"));
+                Logger.info("Server received message: [" + message.getChannelId() + ":" + message.getTopic() +
+                        "]:  " + message.getData().getString("string"));
             }
         });
 

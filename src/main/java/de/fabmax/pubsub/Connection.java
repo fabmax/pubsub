@@ -61,7 +61,7 @@ class Connection {
         mSender.start();
     }
 
-    public void close() {
+    public synchronized void close() {
         boolean wasClosed = mClosed;
         mClosed = true;
 
@@ -174,7 +174,10 @@ class Connection {
             try {
                 while (!mConnection.isClosed()) {
                     byte[] data = mCodec.encodeMessage(mSendQueue.take());
-                    mConnection.getOutputStream().write(data);
+                    OutputStream out = mConnection.getOutputStream();
+                    if (out != null) {
+                        out.write(data);
+                    }
                 }
             } catch (IOException | InterruptedException e) {
                 // if closed socket was closed on purpose

@@ -2,6 +2,7 @@ package de.fabmax.pubsub;
 
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Created by Max on 24.02.2015.
@@ -20,6 +21,8 @@ public abstract class Node implements ChannelProvider, MessageListener {
     public final long getNodeId() {
         return mNodeId;
     }
+
+    public abstract Set<Long> getKnownNodeIds();
 
     public abstract void close();
 

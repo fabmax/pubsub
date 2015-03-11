@@ -34,6 +34,10 @@ public class ClientHandler implements ChannelProvider, ConnectionListener {
         mClientConnection.open();
     }
 
+    public long getClientNodeId() {
+        return mNodeId;
+    }
+
     public String getClientAddress() {
         return mClientAddress;
     }
@@ -50,7 +54,6 @@ public class ClientHandler implements ChannelProvider, ConnectionListener {
 
     @Override
     public void onMessageReceived(Message message) {
-        if (message.getTopic().equals("test")) Logger.warn("received msg: " + message.getTopic());
         if (message.getChannelId().equals(ControlMessages.CONTROL_CHANNEL_ID)) {
             mControlChannel.onMessageReceived(message);
         } else {
@@ -74,10 +77,16 @@ public class ClientHandler implements ChannelProvider, ConnectionListener {
         }
     }
 
+    protected void sendControlMessage(Message ctrlMessage) {
+        ctrlMessage.setChannelId(ControlMessages.CONTROL_CHANNEL_ID);
+        mClientConnection.sendMessage(ctrlMessage);
+    }
+
     @ChannelEndpoint
     public void registerNode(@EndpointParameter(name = "nodeId") long nodeId) {
         Logger.debug(mClientAddress + " registered node: " + nodeId);
         mNodeId = nodeId;
+        mServer.clientRegistered(mNodeId, this);
     }
 
     @ChannelEndpoint

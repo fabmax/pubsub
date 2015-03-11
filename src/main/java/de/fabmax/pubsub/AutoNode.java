@@ -6,9 +6,10 @@ import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Max on 09.03.2015.
@@ -31,6 +32,16 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
 
         // don't start server yet, wait for discovery result, which is initially fired even if no services are found
         //startServer();
+    }
+
+    @Override
+    public Set<Long> getKnownNodeIds() {
+        if (mServer != null) {
+            return mServer.getKnownNodeIds();
+        } else if (mClient != null) {
+            return mClient.getKnownNodeIds();
+        }
+        return new HashSet<>();
     }
 
     private void startServer() {

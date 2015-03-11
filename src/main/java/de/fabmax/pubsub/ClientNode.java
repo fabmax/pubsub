@@ -1,11 +1,16 @@
 package de.fabmax.pubsub;
 
+import de.fabmax.pubsub.util.ChannelEndpoint;
+import de.fabmax.pubsub.util.EndpointParameter;
+import de.fabmax.pubsub.util.MessageMapper;
 import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Max on 24.02.2015.
@@ -15,6 +20,7 @@ public class ClientNode extends Node implements ConnectionListener {
     private final boolean mIsDaemon;
     private final ConnectThread mConnector;
     private final Channel mControlChannel;
+    private final HashSet<Long> mKnownNodeIds = new HashSet<>();
 
     public ClientNode(String serverAddr, int serverPort, boolean isDaemon) throws UnknownHostException {
         this(InetAddress.getByName(serverAddr), serverPort, isDaemon);
@@ -25,7 +31,14 @@ public class ClientNode extends Node implements ConnectionListener {
 
         mConnector = new ConnectThread(serverAddr, serverPort);
         mControlChannel = openChannel(ControlMessages.CONTROL_CHANNEL_ID);
-        mControlChannel.addMessageListener(new ControlChannelListener());
+        mControlChannel.addMessageListener(new MessageMapper(this));
+    }
+
+    @Override
+    public Set<Long> getKnownNodeIds() {
+        synchronized (mKnownNodeIds) {
+            return new HashSet<>(mKnownNodeIds);
+        }
     }
 
     @Override
@@ -66,10 +79,19 @@ public class ClientNode extends Node implements ConnectionListener {
         Logger.info("Disconnected from server");
     }
 
-    private class ControlChannelListener implements MessageListener {
-        @Override
-        public void onMessageReceived(Message message) {
-            Logger.debug("Control message received: topic=" + message.getTopic());
+    @ChannelEndpoint
+    public void registerNode(@EndpointParameter(name = "nodeId") long nodeId) {
+        Logger.debug("Registered node: " + nodeId);
+        synchronized (mKnownNodeIds) {
+            mKnownNodeIds.add(nodeId);
+        }
+    }
+
+    @ChannelEndpoint
+    public void unregisterNode(@EndpointParameter(name = "nodeId") long nodeId) {
+        Logger.debug("Unregistered node: " + nodeId);
+        synchronized (mKnownNodeIds) {
+            mKnownNodeIds.remove(nodeId);
         }
     }
 

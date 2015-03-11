@@ -6,9 +6,7 @@ import org.pmw.tinylog.Logger;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Max on 24.02.2015.
@@ -24,6 +22,7 @@ public class ServerNode extends Node {
     private final int mPort;
     private final ClientAcceptor mClientAcceptor;
     private final List<ClientHandler> mClients = new ArrayList<>();
+    private final HashMap<Long, ClientHandler> mRegisteredClients = new HashMap<>();
 
     private DnsServiceAdvertiser mServiceAdvertiser = null;
 
@@ -35,7 +34,7 @@ public class ServerNode extends Node {
         mClientAcceptor.setDaemon(mIsDaemon);
         mClientAcceptor.start();
 
-        Logger.info("Server started");
+        Logger.info("Server started, nodeId: " + getNodeId());
     }
 
     protected void clientConnected(Socket clientSock) {
@@ -43,6 +42,12 @@ public class ServerNode extends Node {
             synchronized (mClients) {
                 ClientHandler handler = new ClientHandler(this, clientSock, mIsDaemon);
                 mClients.add(handler);
+                // tell client this server's nodeId
+                handler.sendControlMessage(ControlMessages.registerNode(getNodeId()));
+                // tell client IDs of all registered nodes
+                for (Long nodeId : mRegisteredClients.keySet()) {
+                    handler.sendControlMessage(ControlMessages.registerNode(nodeId));
+                }
                 Logger.info("Client connected: " + handler.getClientAddress());
             }
         } catch (IOException e) {
@@ -53,8 +58,30 @@ public class ServerNode extends Node {
     protected void clientDisconnected(ClientHandler client) {
         synchronized (mClients) {
             mClients.remove(client);
+            long nodeId = client.getClientNodeId();
+            if (nodeId != 0) {
+                mRegisteredClients.remove(nodeId);
+                Message unregisteredMsg = ControlMessages.unregisterNode(nodeId);
+                for (ClientHandler handler : mClients) {
+                    if (handler != client) {
+                        handler.sendControlMessage(unregisteredMsg);
+                    }
+                }
+            }
         }
         Logger.info("Client disconnected: " + client.getClientAddress());
+    }
+
+    protected void clientRegistered(long clientId, ClientHandler client) {
+        Message registeredMsg = ControlMessages.registerNode(clientId);
+        synchronized (mClients) {
+            mRegisteredClients.put(clientId, client);
+            for (ClientHandler handler : mClients) {
+                if (handler != client) {
+                    handler.sendControlMessage(registeredMsg);
+                }
+            }
+        }
     }
 
     protected void clientMessageReceived(ClientHandler client, Message message) {
@@ -76,6 +103,13 @@ public class ServerNode extends Node {
         } else if (!enabled && mServiceAdvertiser != null) {
             mServiceAdvertiser.close();
             mServiceAdvertiser = null;
+        }
+    }
+
+    @Override
+    public Set<Long> getKnownNodeIds() {
+        synchronized (mClients) {
+            return new HashSet<>(mRegisteredClients.keySet());
         }
     }
 
