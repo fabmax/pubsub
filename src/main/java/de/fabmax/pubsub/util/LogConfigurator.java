@@ -10,7 +10,7 @@ import org.pmw.tinylog.writers.Writer;
  */
 public class LogConfigurator {
     public static Level LOG_LEVEL = Level.TRACE;
-    public static String LOG_PATTERN = "{date:yyyy-MM-dd HH:mm:ss} {level}: {message} [{class}#{method}]";
+    public static String LOG_PATTERN = "{date:yyyy-MM-dd HH:mm:ss.SSS} {level}: {message} [{class}#{method}]";
     public static Writer WRITER = new ConsoleWriter();
 
     public static void configureLogging() {

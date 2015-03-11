@@ -18,6 +18,10 @@ public class Channel {
         mChannelId = channelId;
     }
 
+    public String getChannelId() {
+        return mChannelId;
+    }
+
     protected void onMessageReceived(Message message) {
         synchronized (mChannelListeners) {
             for (MessageListener l : mChannelListeners) {

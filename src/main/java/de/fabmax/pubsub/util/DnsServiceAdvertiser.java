@@ -69,6 +69,6 @@ public class DnsServiceAdvertiser implements Runnable {
                 Logger.error("Exception on closing advertiser: " + e.getClass().getName() + ": " + e.getMessage());
             }
         }
-        Logger.debug("Service advertising stopped");
+        Logger.info("Service advertising stopped");
     }
 }

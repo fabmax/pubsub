@@ -4,6 +4,7 @@ import de.fabmax.pubsub.*;
 import de.fabmax.pubsub.JsonCodec;
 import de.fabmax.pubsub.extra.ProtobufCodec;
 import de.fabmax.pubsub.util.LogConfigurator;
+import org.pmw.tinylog.Logger;
 
 import java.util.Arrays;
 
@@ -33,15 +34,15 @@ public class SimpleDemo {
         clientChannel.addMessageListener(new MessageListener() {
             @Override
             public void onMessageReceived(Message message) {
-                System.out.println("Client received message: [" + message.getChannelId() + "]: " + message.getTopic());
-                System.out.println("  " + message.getData().getString("string"));
+                Logger.info("Client received message: [" + message.getChannelId() + "]: " + message.getTopic());
+                Logger.info("  " + message.getData().getString("string"));
             }
         });
         serverChannel.addMessageListener(new MessageListener() {
             @Override
             public void onMessageReceived(Message message) {
-                System.out.println("Server received message: [" + message.getChannelId() + "]: " + message.getTopic());
-                System.out.println("  " + message.getData().getString("string"));
+                Logger.info("Server received message: [" + message.getChannelId() + "]: " + message.getTopic());
+                Logger.info("  " + message.getData().getString("string"));
             }
         });
 

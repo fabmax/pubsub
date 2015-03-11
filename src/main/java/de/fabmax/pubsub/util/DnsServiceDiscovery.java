@@ -120,7 +120,7 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
                 Logger.error("Exception on closing discovery: " + e.getClass().getName() + ": " + e.getMessage());
             }
         }
-        Logger.debug("Service discovery stopped");
+        Logger.info("Service discovery stopped");
     }
 
     @Override

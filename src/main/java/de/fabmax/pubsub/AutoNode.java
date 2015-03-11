@@ -22,6 +22,8 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
     private ClientNode mClient = null;
     private DnsServiceDiscovery.DiscoveredService mRemoteHost;
 
+    private final Object mLock = new Object();
+
     public AutoNode() {
         mAddressChecker = new AddressChecker();
         mDiscovery = new DnsServiceDiscovery(ServerNode.DNS_SD_TYPE);
@@ -33,21 +35,30 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
 
     private void startServer() {
         stopClient();
-        if (mServer == null) {
-            try {
-                Logger.info("Starting server");
-                mServer = new ServerNode(ServerNode.DEFAULT_PORT, true);
-                mServer.setServiceAdvertisingEnabled(true);
-            } catch (IOException e) {
-                e.printStackTrace();
+        synchronized (mLock) {
+            if (mServer == null) {
+                try {
+                    Logger.info("Starting server");
+                    mServer = new ServerNode(ServerNode.DEFAULT_PORT, true);
+                    mServer.setServiceAdvertisingEnabled(true);
+
+                    // register all active channels
+                    for (Channel ch : mChannels.values()) {
+                        mServer.registerChannel(ch);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
     private void stopServer() {
-        if (mServer != null) {
-            mServer.close();
-            mServer = null;
+        synchronized (mLock) {
+            if (mServer != null) {
+                mServer.close();
+                mServer = null;
+            }
         }
     }
 
@@ -56,18 +67,27 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
         if (mClient != null && !service.equals(mRemoteHost)) {
             stopClient();
         }
-        if (mClient == null) {
-            mRemoteHost = service;
-            Logger.info("Starting client connection to " + mRemoteHost.address + ", port: " + mRemoteHost.port);
-            mClient = new ClientNode(mRemoteHost.address, mRemoteHost.port, true);
+        synchronized (mLock) {
+            if (mClient == null) {
+                mRemoteHost = service;
+                Logger.info("Starting client connection to " + mRemoteHost.address + ", port: " + mRemoteHost.port);
+                mClient = new ClientNode(mRemoteHost.address, mRemoteHost.port, true);
+
+                // register all active channels
+                for (Channel ch : mChannels.values()) {
+                    mClient.registerChannel(ch);
+                }
+            }
         }
     }
 
     private void stopClient() {
-        if (mClient!= null) {
-            mRemoteHost = null;
-            mClient.close();
-            mClient = null;
+        synchronized (mLock) {
+            if (mClient != null) {
+                mRemoteHost = null;
+                mClient.close();
+                mClient = null;
+            }
         }
     }
 
@@ -84,7 +104,26 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
 
     @Override
     public void publish(Message message) {
+        synchronized (mLock) {
+            if (mClient != null) {
+                mClient.publish(message);
+            }
+            if (mServer != null) {
+                mServer.publish(message);
+            }
+        }
+    }
 
+    @Override
+    protected void registerChannel(Channel channel) {
+        synchronized (mLock) {
+            if (mClient != null) {
+                mClient.registerChannel(channel);
+            }
+            if (mServer != null) {
+                mServer.registerChannel(channel);
+            }
+        }
     }
 
     @Override

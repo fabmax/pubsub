@@ -12,12 +12,14 @@ import java.util.HashSet;
 /**
  * ClientHandler has to be public for reflections used by {@link de.fabmax.pubsub.util.MessageMapper} to work.
  */
-public class ClientHandler implements ChannelProvider, MessageListener {
+public class ClientHandler implements ChannelProvider, ConnectionListener {
 
     private final ServerNode mServer;
     private final Connection mClientConnection;
     private final String mClientAddress;
     private final Channel mControlChannel;
+    private long mNodeId = 0;
+    private boolean mClosed = false;
 
     private final HashSet<String> mRegisteredChannels = new HashSet<>();
 
@@ -28,7 +30,7 @@ public class ClientHandler implements ChannelProvider, MessageListener {
         mControlChannel = new Channel(this, ControlMessages.CONTROL_CHANNEL_ID);
         mControlChannel.addMessageListener(new MessageMapper(this));
 
-        mClientConnection.setMessageListener(this);
+        mClientConnection.setConnectionListener(this);
         mClientConnection.open();
     }
 
@@ -40,6 +42,7 @@ public class ClientHandler implements ChannelProvider, MessageListener {
      * Is called by {@link de.fabmax.pubsub.ServerNode} when server is closed.
      */
     void close() {
+        mClosed = true;
         if (!mClientConnection.isClosed()) {
             mClientConnection.close();
         }
@@ -47,6 +50,7 @@ public class ClientHandler implements ChannelProvider, MessageListener {
 
     @Override
     public void onMessageReceived(Message message) {
+        if (message.getTopic().equals("test")) Logger.warn("received msg: " + message.getTopic());
         if (message.getChannelId().equals(ControlMessages.CONTROL_CHANNEL_ID)) {
             mControlChannel.onMessageReceived(message);
         } else {
@@ -55,10 +59,25 @@ public class ClientHandler implements ChannelProvider, MessageListener {
     }
 
     @Override
+    public void onConnectionClosed() {
+        if (!mClosed) {
+            // if mClosed is true, this handler was closed by the server and we don't have to notify him anymore
+            mServer.clientDisconnected(this);
+            mClosed = true;
+        }
+    }
+
+    @Override
     public void publish(Message message) {
         if (mRegisteredChannels.contains(message.getChannelId())) {
             mClientConnection.sendMessage(message);
         }
+    }
+
+    @ChannelEndpoint
+    public void registerNode(@EndpointParameter(name = "nodeId") long nodeId) {
+        Logger.debug(mClientAddress + " registered node: " + nodeId);
+        mNodeId = nodeId;
     }
 
     @ChannelEndpoint

@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 /**
  * Created by Max on 24.02.2015.
  */
-public class ClientNode extends Node {
+public class ClientNode extends Node implements ConnectionListener {
 
     private final boolean mIsDaemon;
     private final ConnectThread mConnector;
@@ -24,7 +24,7 @@ public class ClientNode extends Node {
         mIsDaemon = isDaemon;
 
         mConnector = new ConnectThread(serverAddr, serverPort);
-        mControlChannel = super.openChannel(ControlMessages.CONTROL_CHANNEL_ID);
+        mControlChannel = openChannel(ControlMessages.CONTROL_CHANNEL_ID);
         mControlChannel.addMessageListener(new ControlChannelListener());
     }
 
@@ -38,26 +38,32 @@ public class ClientNode extends Node {
         Connection con = mConnector.mServerConnection;
         if (con != null) {
             con.sendMessage(message);
+        } else {
+            Logger.debug("Discarding message: not connected");
         }
     }
 
     @Override
-    public Channel openChannel(String channelId) {
-        mControlChannel.publish(ControlMessages.registerChannel(channelId));
-        return super.openChannel(channelId);
+    protected void registerChannel(Channel channel) {
+        if (mControlChannel != null) {
+            mControlChannel.publish(ControlMessages.registerChannel(channel.getChannelId()));
+        }
     }
 
     private void onConnect() {
-        Logger.debug("Connected to server");
+        Logger.info("Connected to server");
 
+        // register this node's ID
+        mControlChannel.publish(ControlMessages.registerNode(getNodeId()));
         // send registered channels to server
         for (String channelId : mChannels.keySet()) {
             mControlChannel.publish(ControlMessages.registerChannel(channelId));
         }
     }
 
-    private void onDisconnect() {
-        Logger.debug("Disconnected from server");
+    @Override
+    public void onConnectionClosed() {
+        Logger.info("Disconnected from server");
     }
 
     private class ControlChannelListener implements MessageListener {
@@ -99,10 +105,9 @@ public class ClientNode extends Node {
                     mServerConnection = new Connection(sock, Codec.defaultCodecFactory, mIsDaemon);
                     mServerConnection.open();
                     onConnect();
-                    mServerConnection.setMessageListener(ClientNode.this);
+                    mServerConnection.setConnectionListener(ClientNode.this);
                     mServerConnection.waitForClose();
                     mServerConnection = null;
-                    onDisconnect();
                 } catch (IOException | InterruptedException e) {
                     // Server is not available, this is silently ignored
                     // wait a little and try to reconnect

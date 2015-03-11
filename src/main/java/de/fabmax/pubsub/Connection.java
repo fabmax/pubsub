@@ -21,6 +21,7 @@ class Connection {
     private final ConnectionReceiver mReceiver;
     private final ConnectionSender mSender;
 
+    private ConnectionListener mListener;
     private boolean mClosed = false;
 
     public Connection(Socket socket, Codec.CodecFactory<?> codecFactory, boolean isDaemon) throws IOException {
@@ -35,16 +36,9 @@ class Connection {
         mSender.setDaemon(isDaemon);
     }
 
-    public void setMessageListener(MessageListener messageListener) {
-        mReceiver.setMessageListener(messageListener);
-    }
-
-    public void waitForClose() throws InterruptedException {
-        mSender.join();
-    }
-
-    public boolean isClosed() {
-        return mClosed;
+    public void setConnectionListener(ConnectionListener connectionListener) {
+        mListener = connectionListener;
+        mReceiver.setMessageListener(connectionListener);
     }
 
     protected InputStream getInputStream() {
@@ -102,8 +96,19 @@ class Connection {
         }
 
         if (!wasClosed) {
+            if (mListener != null) {
+                mListener.onConnectionClosed();
+            }
             Logger.debug("Connection closed");
         }
+    }
+
+    public void waitForClose() throws InterruptedException {
+        mSender.join();
+    }
+
+    public boolean isClosed() {
+        return mClosed;
     }
 
     private static class ConnectionReceiver extends Thread {

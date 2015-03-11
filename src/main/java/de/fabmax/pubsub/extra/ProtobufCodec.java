@@ -65,7 +65,7 @@ public class ProtobufCodec extends Codec {
                 }
             }
 
-            if (mBufferPos > 8) {
+            while (mBufferPos > 8) {
                 // valid sync bytes found + packet length available
                 int pktLen = ((mReceiveBuffer[startPos + 4] & 0xff) << 24) |
                              ((mReceiveBuffer[startPos + 5] & 0xff) << 16) |
@@ -81,6 +81,7 @@ public class ProtobufCodec extends Codec {
                     // remove decoded bytes from buffer
                     if (mBufferPos > pktLen + 8) {
                         System.arraycopy(mReceiveBuffer, pktLen + 8, mReceiveBuffer, 0, mBufferPos - pktLen - 8);
+                        mBufferPos -= pktLen + 8;
                     } else {
                         mBufferPos = 0;
                     }

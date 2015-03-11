@@ -25,8 +25,6 @@ public class ServerNode extends Node {
     private final ClientAcceptor mClientAcceptor;
     private final List<ClientHandler> mClients = new ArrayList<>();
 
-    private final HashSet<String> mRegisteredChannels = new HashSet<>();
-
     private DnsServiceAdvertiser mServiceAdvertiser = null;
 
     public ServerNode(int port, boolean isDaemon) throws IOException {
@@ -37,7 +35,7 @@ public class ServerNode extends Node {
         mClientAcceptor.setDaemon(mIsDaemon);
         mClientAcceptor.start();
 
-        Logger.debug("ServerNode started");
+        Logger.info("Server started");
     }
 
     protected void clientConnected(Socket clientSock) {
@@ -45,7 +43,7 @@ public class ServerNode extends Node {
             synchronized (mClients) {
                 ClientHandler handler = new ClientHandler(this, clientSock, mIsDaemon);
                 mClients.add(handler);
-                Logger.debug("Client connected: " + handler.getClientAddress());
+                Logger.info("Client connected: " + handler.getClientAddress());
             }
         } catch (IOException e) {
             Logger.error("Unable to initialize client connection", e);
@@ -56,7 +54,7 @@ public class ServerNode extends Node {
         synchronized (mClients) {
             mClients.remove(client);
         }
-        Logger.debug("Client disconnected: " + client.getClientAddress());
+        Logger.info("Client disconnected: " + client.getClientAddress());
     }
 
     protected void clientMessageReceived(ClientHandler client, Message message) {
@@ -67,7 +65,7 @@ public class ServerNode extends Node {
                 }
             }
         }
-        if (mRegisteredChannels.contains(message.getChannelId())) {
+        if (mChannels.containsKey(message.getChannelId())) {
             onMessageReceived(message);
         }
     }
@@ -92,13 +90,12 @@ public class ServerNode extends Node {
             }
             mClients.clear();
         }
-        Logger.debug("Server closed");
+        Logger.info("Server closed");
     }
 
     @Override
-    public Channel openChannel(String channelId) {
-        mRegisteredChannels.add(channelId);
-        return super.openChannel(channelId);
+    protected void registerChannel(Channel channel) {
+        // server has nothing to do here
     }
 
     @Override
