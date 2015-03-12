@@ -7,7 +7,9 @@ import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * ClientHandler has to be public for reflections used by {@link de.fabmax.pubsub.util.MessageMapper} to work.
@@ -32,6 +34,11 @@ public class ClientHandler implements ChannelProvider, ConnectionListener {
 
         mClientConnection.setConnectionListener(this);
         mClientConnection.open();
+
+        // tell client all known node IDs (including the server's)
+        Set<Long> knownIds = mServer.getKnownNodeIds();
+        knownIds.add(mServer.getNodeId());
+        sendControlMessage(ControlMessages.registerNodes(knownIds));
     }
 
     public long getClientNodeId() {

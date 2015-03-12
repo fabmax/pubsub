@@ -42,12 +42,6 @@ public class ServerNode extends Node {
             synchronized (mClients) {
                 ClientHandler handler = new ClientHandler(this, clientSock, mIsDaemon);
                 mClients.add(handler);
-                // tell client this server's nodeId
-                handler.sendControlMessage(ControlMessages.registerNode(getNodeId()));
-                // tell client IDs of all registered nodes
-                for (Long nodeId : mRegisteredClients.keySet()) {
-                    handler.sendControlMessage(ControlMessages.registerNode(nodeId));
-                }
                 Logger.info("Client connected: " + handler.getClientAddress());
             }
         } catch (IOException e) {
@@ -123,6 +117,7 @@ public class ServerNode extends Node {
                 handler.close();
             }
             mClients.clear();
+            mRegisteredClients.clear();
         }
         Logger.info("Server closed");
     }

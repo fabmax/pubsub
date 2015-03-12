@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -77,6 +78,9 @@ public class ClientNode extends Node implements ConnectionListener {
     @Override
     public void onConnectionClosed() {
         Logger.info("Disconnected from server");
+        synchronized (mKnownNodeIds) {
+            mKnownNodeIds.clear();
+        }
     }
 
     @ChannelEndpoint
@@ -84,6 +88,16 @@ public class ClientNode extends Node implements ConnectionListener {
         Logger.debug("Registered node: " + nodeId);
         synchronized (mKnownNodeIds) {
             mKnownNodeIds.add(nodeId);
+        }
+    }
+
+    @ChannelEndpoint
+    public void registerNodes(@EndpointParameter(name = "nodeIds") long[] nodeIds) {
+        Logger.debug("Registered nodes: " + Arrays.toString(nodeIds));
+        synchronized (mKnownNodeIds) {
+            for (long id : nodeIds) {
+                mKnownNodeIds.add(id);
+            }
         }
     }
 
