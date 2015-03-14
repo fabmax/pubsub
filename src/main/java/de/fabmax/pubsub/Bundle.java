@@ -65,6 +65,10 @@ public class Bundle {
         return mData.isEmpty();
     }
 
+    public boolean containsKey(String key) {
+        return mData.containsKey(key);
+    }
+
     public Set<String> keySet() {
         return mData.keySet();
     }
@@ -152,6 +156,16 @@ public class Bundle {
 
     public String[] getStringArray(String key) {
         return typedGet(String[].class, key);
+    }
+
+    public void put(String key, ElementType type, Object value) {
+        mData.put(key, new Item(type, value));
+    }
+
+    public void putBundle(Bundle other) {
+        for (String key : other.keySet()) {
+            put(key, other.getType(key), other.get(key));
+        }
     }
 
     public void putBoolean(String key, boolean value) {

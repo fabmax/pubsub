@@ -16,9 +16,10 @@ public class SimpleDemo {
     public static void main(String[] args) throws Exception {
         LogConfigurator.configureLogging();
 
-        clientServerTest();
+        //clientServerTest();
         //messageTest();
-        //codecBenchmark();
+        codecBenchmark();
+        codecBenchmark();
     }
 
     public static void clientServerTest() throws Exception {
@@ -116,16 +117,15 @@ public class SimpleDemo {
 
         System.out.println("Json size: " + jsonEnc.length + ", proto size: " + protoEnc.length);
 
+        int n = 10000;
         System.out.println("Warming up...");
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < n; i++) {
             test.getData().putInt("int", i);
             byte[] data = jsonCodec.encodeMessage(test);
             jsonCodec.decodeData(data, 0, data.length);
             data = protoCodec.encodeMessage(test);
             protoCodec.decodeData(data, 0, data.length);
         }
-
-        int n = 50000;
 
         System.out.println("Benchmarking JSON codec...");
         long tJsonEnc = System.nanoTime();

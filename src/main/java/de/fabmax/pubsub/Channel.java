@@ -1,5 +1,7 @@
 package de.fabmax.pubsub;
 
+import org.pmw.tinylog.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +42,18 @@ public class Channel {
         synchronized (mChannelListeners) {
             mChannelListeners.remove(listener);
         }
+    }
+
+    public void sendPtpMessage(Message message, Node fromNode, long toNodeId) {
+        if (!fromNode.getKnownNodeIds().contains(toNodeId)) {
+            Logger.warn("sendPtpMessage called with unknown receiver node ID: " + toNodeId);
+        }
+        PtpMessage ptp = new PtpMessage(fromNode, toNodeId);
+        ptp.setTopic(message.getTopic());
+        if (message.getData() != null) {
+            ptp.setData(message.getData());
+        }
+        publish(ptp);
     }
 
     public void publish(Message message) {

@@ -79,16 +79,8 @@ public class ServerNode extends Node {
     }
 
     protected void clientMessageReceived(ClientHandler client, Message message) {
-        synchronized (mClients) {
-            for (ClientHandler handler : mClients) {
-                if (handler != client) {
-                    handler.publish(message);
-                }
-            }
-        }
-        if (mChannels.containsKey(message.getChannelId())) {
-            onMessageReceived(message);
-        }
+        // redistribute received message to other clients
+        publish(message, client, false);
     }
 
     public void setServiceAdvertisingEnabled(boolean enabled) {
@@ -129,9 +121,39 @@ public class ServerNode extends Node {
 
     @Override
     public void publish(Message message) {
-        synchronized (mClients) {
-            for (ClientHandler handler : mClients) {
-                handler.publish(message);
+        publish(message, null, true);
+    }
+
+    private void publish(Message message, ClientHandler excluded, boolean fromServer) {
+        if (PtpMessage.isPtpMessage(message)) {
+            // this is a point-to-point message, send it only to the addressed client
+            long toNodeId = PtpMessage.getToNodeId(message);
+            if (toNodeId == getNodeId()) {
+                // message is for server
+                onMessageReceived(message);
+            } else {
+                // message is for an other client
+                synchronized (mClients) {
+                    ClientHandler handler = mRegisteredClients.get(toNodeId);
+                    if (handler != null) {
+                        handler.publish(message);
+                    } else {
+                        Logger.warn("Received PtpMessage for unknown client: " + toNodeId);
+                    }
+                }
+            }
+
+        } else {
+            // this is a regular broadcast message, send it to all clients (relevance is checked by ClientHandler
+            synchronized (mClients) {
+                for (ClientHandler handler : mClients) {
+                    if (handler != excluded) {
+                        handler.publish(message);
+                    }
+                }
+            }
+            if (!fromServer) {
+                onMessageReceived(message);
             }
         }
     }

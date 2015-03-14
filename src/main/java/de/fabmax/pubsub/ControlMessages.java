@@ -7,7 +7,7 @@ import java.util.Set;
  */
 class ControlMessages {
 
-    static final String CONTROL_CHANNEL_ID = "de.fabmax.pubsub.ctrl";
+    static final String CONTROL_CHANNEL_ID = "de.fabmax.pubsub.CTRL";
 
     static final String TOPIC_REGISTER_NODE = "registerNode";
     static final String TOPIC_REGISTER_NODES = "registerNodes";

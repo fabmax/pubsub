@@ -5,9 +5,9 @@ package de.fabmax.pubsub;
  */
 public class Message {
 
-    private String mChannelId;
-    private String mTopic;
-    private Bundle mData;
+    protected String mChannelId;
+    protected String mTopic;
+    protected Bundle mData;
 
     public Message() {
         this(null);

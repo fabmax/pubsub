@@ -95,13 +95,11 @@ public class ProtobufCodec extends Codec {
     }
 
     private boolean hasSync(byte[] buf, int pos) {
-        if (buf.length < pos + 4) {
-            return false;
-        }
-        return buf[0] == MAGIC_BYTES[0] &&
-               buf[1] == MAGIC_BYTES[1] &&
-               buf[2] == MAGIC_BYTES[2] &&
-               buf[3] == MAGIC_BYTES[3];
+        return buf.length >= pos + 4 &&
+               buf[pos]     == MAGIC_BYTES[0] &&
+               buf[pos + 1] == MAGIC_BYTES[1] &&
+               buf[pos + 2] == MAGIC_BYTES[2] &&
+               buf[pos + 3] == MAGIC_BYTES[3];
     }
 
     @Override
