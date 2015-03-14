@@ -119,7 +119,7 @@ public class ProtobufCodec extends Codec {
         builder.setTopic(message.getTopic());
 
         Bundle bundle = message.getData();
-        if (bundle != null) {
+        if (bundle != null && !bundle.isEmpty()) {
             ProtobufMessage.ProtoMessage.Bundle.Builder bundleBuilder = ProtobufMessage.ProtoMessage.Bundle.newBuilder();
             for (String key : message.getData().keySet()) {
                 ProtobufMessage.ProtoMessage.Item.Builder itBuilder = ProtobufMessage.ProtoMessage.Item.newBuilder();

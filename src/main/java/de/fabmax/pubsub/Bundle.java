@@ -1,6 +1,5 @@
 package de.fabmax.pubsub;
 
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
@@ -159,6 +158,9 @@ public class Bundle {
     }
 
     public void put(String key, ElementType type, Object value) {
+        if (!type.getType().isInstance(value)) {
+            throw new IllegalArgumentException("value is not of specified type");
+        }
         mData.put(key, new Item(type, value));
     }
 

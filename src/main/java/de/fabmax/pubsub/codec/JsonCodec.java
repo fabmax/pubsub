@@ -24,7 +24,7 @@ public class JsonCodec extends Codec {
         obj.put("cId", message.getChannelId());
         obj.put("top", message.getTopic());
 
-        if (message.getData() != null) {
+        if (message.getData() != null && !message.getData().isEmpty()) {
             obj.put("data", serializeBundle(message.getData()));
         }
 
