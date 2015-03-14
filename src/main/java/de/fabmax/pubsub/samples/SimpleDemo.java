@@ -1,8 +1,9 @@
 package de.fabmax.pubsub.samples;
 
 import de.fabmax.pubsub.*;
-import de.fabmax.pubsub.JsonCodec;
-import de.fabmax.pubsub.extra.ProtobufCodec;
+import de.fabmax.pubsub.codec.Codec;
+import de.fabmax.pubsub.codec.JsonCodec;
+import de.fabmax.pubsub.codec.ProtobufCodec;
 import de.fabmax.pubsub.util.LogConfigurator;
 import org.pmw.tinylog.Logger;
 

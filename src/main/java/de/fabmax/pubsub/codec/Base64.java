@@ -1,4 +1,4 @@
-package de.fabmax.pubsub.util;
+package de.fabmax.pubsub.codec;
 
 /**
  * Created by Max on 24.02.2015.
@@ -76,10 +76,6 @@ public class Base64 {
     }
 
     private static void encode3b(char[] buf, int bufPos, byte[] data, int off, int len) {
-        if (len < 0 || len > 3) {
-            throw new IllegalArgumentException("len must be in range [0 .. 3]");
-        }
-
         int b0 = (data[off] & 0xfc) >> 2;
         int b1 = (data[off] & 0x03) << 4;
         int b2 = -1;

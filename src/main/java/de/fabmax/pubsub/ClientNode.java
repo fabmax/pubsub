@@ -1,5 +1,6 @@
 package de.fabmax.pubsub;
 
+import de.fabmax.pubsub.codec.Codec;
 import de.fabmax.pubsub.util.ChannelEndpoint;
 import de.fabmax.pubsub.util.EndpointParameter;
 import de.fabmax.pubsub.util.MessageMapper;

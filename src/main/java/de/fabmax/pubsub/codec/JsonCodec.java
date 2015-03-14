@@ -1,6 +1,7 @@
-package de.fabmax.pubsub;
+package de.fabmax.pubsub.codec;
 
-import de.fabmax.pubsub.util.Base64;
+import de.fabmax.pubsub.Bundle;
+import de.fabmax.pubsub.Message;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.pmw.tinylog.Logger;

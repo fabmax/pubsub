@@ -1,6 +1,6 @@
 package pubsub;
 
-option java_package = "de.fabmax.pubsub.extra";
+option java_package = "de.fabmax.pubsub.codec";
 option java_outer_classname = "ProtobufMessage";
 
 message ProtoMessage {

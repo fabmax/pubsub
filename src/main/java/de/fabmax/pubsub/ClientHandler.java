@@ -1,5 +1,6 @@
 package de.fabmax.pubsub;
 
+import de.fabmax.pubsub.codec.Codec;
 import de.fabmax.pubsub.util.ChannelEndpoint;
 import de.fabmax.pubsub.util.EndpointParameter;
 import de.fabmax.pubsub.util.MessageMapper;
@@ -7,7 +8,6 @@ import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 

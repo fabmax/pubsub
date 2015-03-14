@@ -1,5 +1,6 @@
 package de.fabmax.pubsub;
 
+import de.fabmax.pubsub.codec.Codec;
 import org.pmw.tinylog.Logger;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package de.fabmax.pubsub.extra;
+package de.fabmax.pubsub.codec;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;

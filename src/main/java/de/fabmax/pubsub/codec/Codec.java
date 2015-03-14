@@ -1,6 +1,6 @@
-package de.fabmax.pubsub;
+package de.fabmax.pubsub.codec;
 
-import de.fabmax.pubsub.extra.ProtobufCodec;
+import de.fabmax.pubsub.Message;
 
 /**
  * Created by Max on 25.02.2015.
