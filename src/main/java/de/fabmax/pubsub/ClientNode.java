@@ -24,6 +24,14 @@ public class ClientNode extends Node implements ConnectionListener {
     private final Channel mControlChannel;
     private final HashSet<Long> mKnownNodeIds = new HashSet<>();
 
+    public ClientNode(String serverAddr) throws UnknownHostException {
+        this(serverAddr, ServerNode.DEFAULT_PORT);
+    }
+
+    public ClientNode(String serverAddr, int serverPort) throws UnknownHostException {
+        this(serverAddr, serverPort, false);
+    }
+
     public ClientNode(String serverAddr, int serverPort, boolean isDaemon) throws UnknownHostException {
         this(InetAddress.getByName(serverAddr), serverPort, isDaemon);
     }

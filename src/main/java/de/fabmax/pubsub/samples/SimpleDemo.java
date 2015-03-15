@@ -17,16 +17,16 @@ public class SimpleDemo {
     public static void main(String[] args) throws Exception {
         LogConfigurator.configureLogging();
 
-        //clientServerTest();
+        clientServerTest();
         //messageTest();
-        codecBenchmark();
-        codecBenchmark();
+        //codecBenchmark();
+        //codecBenchmark();
     }
 
     public static void clientServerTest() throws Exception {
         // create a server and a client node
-        Node server = NodeFactory.createServerNode(9874);
-        Node client = NodeFactory.createClientNode("localhost", 9874);
+        Node server = new ServerNode();
+        Node client = new ClientNode("localhost");
 
         // register the same channel on server and client
         Channel clientChannel = client.openChannel("test");
@@ -36,15 +36,15 @@ public class SimpleDemo {
         clientChannel.addMessageListener(new MessageListener() {
             @Override
             public void onMessageReceived(Message message) {
-                Logger.info("Client received message: [" + message.getChannelId() + ":" + message.getTopic() +
-                        "]:  " + message.getData().getString("string"));
+                Logger.info("Client received message: [" + message.getChannelId() + ":" +
+                        message.getTopic() + "]:  " + message.getData().getString("string"));
             }
         });
         serverChannel.addMessageListener(new MessageListener() {
             @Override
             public void onMessageReceived(Message message) {
-                Logger.info("Server received message: [" + message.getChannelId() + ":" + message.getTopic() +
-                        "]:  " + message.getData().getString("string"));
+                Logger.info("Server received message: [" + message.getChannelId() + ":" +
+                        message.getTopic() + "]:  " + message.getData().getString("string"));
             }
         });
 

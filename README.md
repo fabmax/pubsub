@@ -7,6 +7,9 @@ Nodes register channels and publish messages in these channels. All nodes regist
 a particular channel receive the messages published in it.
 
 ##Features:
+* Messages can be broadcasted as well as being sent to a specific client
+* Auto-discovery of server nodes using dns-sd / zeroconf
+* Auto-nodes which can act as server or client, as required
 * Clients automatically recover from server connection loss
 * Two message de-/serialization codecs:
   * Google protocol buffers based for fast and bandwith efficient message serialization
@@ -17,8 +20,8 @@ a particular channel receive the messages published in it.
 ##Hello world example:
 ```java
 // create a server and a client node
-Node server = NodeFactory.createServerNode(9874);
-Node client = NodeFactory.createClientNode("localhost", 9874);
+Node server = new ServerNode();
+Node client = new ClientNode("localhost");
 
 // register the same channel on server and client
 Channel clientChannel = client.openChannel("test");
@@ -28,20 +31,20 @@ Channel serverChannel = server.openChannel("test");
 clientChannel.addChannelListener(new ChannelListener() {
     @Override
     public void onMessageReceived(Message message) {
-        System.out.println("Client received message: [" + message.getChannelId() + "]: " + message.getTopic());
-        System.out.println("  " + message.getData().getString("string"));
+        System.out.println("Client received message: [" + message.getChannelId() + ":" +
+                           message.getTopic() + "]:  " + message.getData().getString("string"));
     }
 });
 serverChannel.addChannelListener(new ChannelListener() {
     @Override
     public void onMessageReceived(Message message) {
-        System.out.println("Server received message: [" + message.getChannelId() + "]: " + message.getTopic());
-        System.out.println("  " + message.getData().getString("string"));
+        System.out.println("Server received message: [" + message.getChannelId() + ":" +
+                           message.getTopic() + "]:  " + message.getData().getString("string"));
     }
 });
 
 // wait a little while connection is negotiated
-Thread.sleep(100);
+Thread.sleep(500);
 
 // send a messsage with some data from client to server
 Bundle clientData = new Bundle();
@@ -54,7 +57,7 @@ serverData.putString("string", "Hello World from server");
 serverChannel.publish(new Message("hot stuff", serverData));
 
 // wait a little until messages are processed
-Thread.sleep(100);
+Thread.sleep(500);
 
 // close server and client
 client.close();

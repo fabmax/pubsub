@@ -26,6 +26,14 @@ public class ServerNode extends Node {
 
     private DnsServiceAdvertiser mServiceAdvertiser = null;
 
+    public ServerNode() throws IOException {
+        this(DEFAULT_PORT);
+    }
+
+    public ServerNode(int port) throws IOException {
+        this(port, false);
+    }
+
     public ServerNode(int port, boolean isDaemon) throws IOException {
         mIsDaemon = isDaemon;
 

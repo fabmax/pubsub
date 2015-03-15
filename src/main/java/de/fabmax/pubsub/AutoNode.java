@@ -18,6 +18,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
 
     private final AddressChecker mAddressChecker;
     private final DnsServiceDiscovery mDiscovery;
+    private final int mServerPort;
 
     private ServerNode mServer = null;
     private ClientNode mClient = null;
@@ -26,6 +27,11 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
     private final Object mLock = new Object();
 
     public AutoNode() {
+        this(ServerNode.DEFAULT_PORT);
+    }
+
+    public AutoNode(int serverPort) {
+        mServerPort = serverPort;
         mAddressChecker = new AddressChecker();
         mDiscovery = new DnsServiceDiscovery(ServerNode.DNS_SD_TYPE);
         mDiscovery.addDiscoveryListener(this);
@@ -50,7 +56,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
             if (mServer == null) {
                 try {
                     Logger.info("Starting server");
-                    mServer = new ServerNode(ServerNode.DEFAULT_PORT, true);
+                    mServer = new ServerNode(mServerPort, true);
                     mServer.setServiceAdvertisingEnabled(true);
 
                     // register all active channels
