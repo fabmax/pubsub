@@ -74,12 +74,13 @@ public abstract class Node implements ChannelProvider, MessageListener {
         Channel channel = mChannels.get(channelId);
         if (channel == null) {
             channel = new Channel(this, channelId);
-            mChannels.put(channelId, channel);
             registerChannel(channel);
         }
         return channel;
     }
 
-    protected abstract void registerChannel(Channel channel);
+    protected void registerChannel(Channel channel) {
+        mChannels.put(channel.getChannelId(), channel);
+    }
 
 }

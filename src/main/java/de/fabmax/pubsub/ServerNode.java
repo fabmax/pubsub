@@ -145,11 +145,6 @@ public class ServerNode extends Node {
     }
 
     @Override
-    protected void registerChannel(Channel channel) {
-        // server has nothing to do here
-    }
-
-    @Override
     public void publish(Message message) {
         publish(message, null, true);
     }

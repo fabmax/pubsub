@@ -89,7 +89,8 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
         try {
             dns = JmDNS.create(DnsConfiguration.getDiscoveryBindAddress());
             dns.addServiceListener(mServiceType, this);
-            Logger.info("Service discovery started, bind address: " + DnsConfiguration.getDiscoveryBindAddress());
+            Logger.info("Service discovery started, bind address: " + DnsConfiguration.getDiscoveryBindAddress() +
+                        ", service type: " + mServiceType);
 
             // do initial discovery, to force fireDiscoveryUpdate(), even if no services are found
             enumerateServices(dns);

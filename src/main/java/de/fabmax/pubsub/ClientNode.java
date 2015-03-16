@@ -68,6 +68,7 @@ public class ClientNode extends Node implements ConnectionListener {
 
     @Override
     protected void registerChannel(Channel channel) {
+        super.registerChannel(channel);
         if (mControlChannel != null) {
             mControlChannel.publish(ControlMessages.registerChannel(channel.getChannelId()));
         }

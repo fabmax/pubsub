@@ -19,6 +19,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
     private final AddressChecker mAddressChecker;
     private final DnsServiceDiscovery mDiscovery;
     private final String mServiceType;
+    private final String mServiceName;
     private final int mServerPort;
 
     private ServerNode mServer = null;
@@ -32,12 +33,17 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
     }
 
     public AutoNode(int serverPort) {
-        this(serverPort, "_pubsub._tcp.local.");
+        this(serverPort, "PubSubServer");
     }
 
-    public AutoNode(int serverPort, String serviceType) {
+    public AutoNode(int serverPort, String serviceName) {
+        this(serverPort, serviceName, "_pubsub._tcp.local.");
+    }
+
+    public AutoNode(int serverPort, String serviceName, String serviceType) {
         mServerPort = serverPort;
         mServiceType = serviceType;
+        mServiceName = serviceName;
         mAddressChecker = new AddressChecker();
         mDiscovery = new DnsServiceDiscovery(serviceType);
         mDiscovery.addDiscoveryListener(this);
@@ -64,7 +70,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
                     Logger.info("Switching to server role");
                     mServer = new ServerNode(mServerPort, true);
                     mServer.addNodeListener(this);
-                    mServer.enableServiceAdvertising("FarbrauschServer", mServiceType);
+                    mServer.enableServiceAdvertising(mServiceName, mServiceType);
 
                     // register all active channels
                     for (Channel ch : mChannels.values()) {
@@ -143,6 +149,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
 
     @Override
     protected void registerChannel(Channel channel) {
+        super.registerChannel(channel);
         synchronized (mLock) {
             if (mClient != null) {
                 mClient.registerChannel(channel);

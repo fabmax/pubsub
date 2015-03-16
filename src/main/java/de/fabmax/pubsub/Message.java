@@ -46,7 +46,16 @@ public class Message {
         return mData;
     }
 
+    @Override
     public String toString() {
         return String.format("Message:{channel:%s;topic:%s}", mChannelId, mTopic);
+    }
+
+    public String prettyPrint() {
+        if (mData == null) {
+            return String.format("[%s:%s]", mChannelId, mTopic);
+        } else {
+            return String.format("[%s:%s]: %s", mChannelId, mTopic, mData.prettyPrint());
+        }
     }
 }

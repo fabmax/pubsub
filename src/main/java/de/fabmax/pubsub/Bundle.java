@@ -1,5 +1,6 @@
 package de.fabmax.pubsub;
 
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
@@ -242,4 +243,25 @@ public class Bundle {
         mData.put(key, new Item(ElementType.STRING_ARRAY, value));
     }
 
+    public String prettyPrint() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("{\n");
+        for (String key : keySet()) {
+            ElementType t = getType(key);
+            String val;
+            if (t == ElementType.BOOLEAN_ARRAY)      val = Arrays.toString((boolean[])get(key));
+            else if (t == ElementType.BYTE_ARRAY)    val = Arrays.toString((byte[])get(key));
+            else if (t == ElementType.CHAR_ARRAY)    val = Arrays.toString((char[])get(key));
+            else if (t == ElementType.DOUBLE_ARRAY)  val = Arrays.toString((double[])get(key));
+            else if (t == ElementType.FLOAT_ARRAY)   val = Arrays.toString((float[])get(key));
+            else if (t == ElementType.INT_ARRAY)     val = Arrays.toString((int[])get(key));
+            else if (t == ElementType.LONG_ARRAY)    val = Arrays.toString((long[])get(key));
+            else if (t == ElementType.SHORT_ARRAY)   val = Arrays.toString((short[])get(key));
+            else if (t == ElementType.STRING_ARRAY)  val = Arrays.toString((String[])get(key));
+            else val = get(key).toString();
+            buf.append(String.format("  \"%s\": %s\n", key, val));
+        }
+        buf.append("}");
+        return buf.toString();
+    }
 }
