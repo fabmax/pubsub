@@ -147,7 +147,7 @@ class Connection {
             } catch (IOException e) {
                 // if closed socket was closed on purpose
                 if (!mConnection.isClosed()) {
-                    Logger.error("Error in client receiver", e);
+                    Logger.debug("Connection closed by server", e);
                 }
                 mConnection.close();
             }

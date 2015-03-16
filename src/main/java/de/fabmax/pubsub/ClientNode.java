@@ -82,6 +82,7 @@ public class ClientNode extends Node implements ConnectionListener {
         for (String channelId : mChannels.keySet()) {
             mControlChannel.publish(ControlMessages.registerChannel(channelId));
         }
+        fireOnConnect();
     }
 
     @Override
@@ -90,6 +91,7 @@ public class ClientNode extends Node implements ConnectionListener {
         synchronized (mKnownNodeIds) {
             mKnownNodeIds.clear();
         }
+        fireOnDisconnect();
     }
 
     @ChannelEndpoint
@@ -98,6 +100,7 @@ public class ClientNode extends Node implements ConnectionListener {
         synchronized (mKnownNodeIds) {
             mKnownNodeIds.add(nodeId);
         }
+        fireOnRemoteNoteConnected(nodeId);
     }
 
     @ChannelEndpoint
@@ -106,6 +109,7 @@ public class ClientNode extends Node implements ConnectionListener {
         synchronized (mKnownNodeIds) {
             for (long id : nodeIds) {
                 mKnownNodeIds.add(id);
+                fireOnRemoteNoteConnected(id);
             }
         }
     }
@@ -116,6 +120,7 @@ public class ClientNode extends Node implements ConnectionListener {
         synchronized (mKnownNodeIds) {
             mKnownNodeIds.remove(nodeId);
         }
+        fireOnRemoteNoteDisconnected(nodeId);
     }
 
     private class ConnectThread extends Thread {
@@ -144,6 +149,7 @@ public class ClientNode extends Node implements ConnectionListener {
 
         @Override
         public void run() {
+            Logger.info("Client started, connecting to " + mServerAddr + ", port: " + mServerPort);
             while (!mClosed) {
                 try {
                     Socket sock = new Socket(mServerAddr, mServerPort);

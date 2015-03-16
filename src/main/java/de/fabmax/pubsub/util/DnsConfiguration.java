@@ -32,7 +32,7 @@ public class DnsConfiguration {
     }
 
     private static InetAddress determineBestBindAddress() {
-        Logger.debug("Service discovery bind address was not explicitly set, guessing one...");
+        Logger.debug("Service discovery bind address was not explicitly set, probing one...");
 
         InetAddress result = null;
         String resultIf = null;
@@ -85,7 +85,7 @@ public class DnsConfiguration {
             Logger.error("Found no suitable local bind address");
         }
 
-        Logger.info("Chose local bind address: " + result + ", interface: \"" + resultIf + "\"");
+        Logger.info("Using local bind address: " + result + ", interface: \"" + resultIf + "\"");
         return result;
     }
 }

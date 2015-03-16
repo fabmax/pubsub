@@ -14,10 +14,11 @@ import java.util.Set;
 /**
  * Created by Max on 09.03.2015.
  */
-public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListener {
+public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListener, NodeListener {
 
     private final AddressChecker mAddressChecker;
     private final DnsServiceDiscovery mDiscovery;
+    private final String mServiceType;
     private final int mServerPort;
 
     private ServerNode mServer = null;
@@ -31,9 +32,14 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
     }
 
     public AutoNode(int serverPort) {
+        this(serverPort, "_pubsub._tcp.local.");
+    }
+
+    public AutoNode(int serverPort, String serviceType) {
         mServerPort = serverPort;
+        mServiceType = serviceType;
         mAddressChecker = new AddressChecker();
-        mDiscovery = new DnsServiceDiscovery(ServerNode.DNS_SD_TYPE);
+        mDiscovery = new DnsServiceDiscovery(serviceType);
         mDiscovery.addDiscoveryListener(this);
 
         // don't start server yet, wait for discovery result, which is initially fired even if no services are found
@@ -55,9 +61,10 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
         synchronized (mLock) {
             if (mServer == null) {
                 try {
-                    Logger.info("Starting server");
+                    Logger.info("Switching to server role");
                     mServer = new ServerNode(mServerPort, true);
-                    mServer.setServiceAdvertisingEnabled(true);
+                    mServer.addNodeListener(this);
+                    mServer.enableServiceAdvertising("FarbrauschServer", mServiceType);
 
                     // register all active channels
                     for (Channel ch : mChannels.values()) {
@@ -73,6 +80,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
     private void stopServer() {
         synchronized (mLock) {
             if (mServer != null) {
+                mServer.removeNodeListener(this);
                 mServer.close();
                 mServer = null;
             }
@@ -87,8 +95,9 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
         synchronized (mLock) {
             if (mClient == null) {
                 mRemoteHost = service;
-                Logger.info("Starting client connection to " + mRemoteHost.address + ", port: " + mRemoteHost.port);
+                Logger.info("Switching to client role");
                 mClient = new ClientNode(mRemoteHost.address, mRemoteHost.port, true);
+                mClient.addNodeListener(this);
 
                 // register all active channels
                 for (Channel ch : mChannels.values()) {
@@ -102,6 +111,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
         synchronized (mLock) {
             if (mClient != null) {
                 mRemoteHost = null;
+                mClient.removeNodeListener(this);
                 mClient.close();
                 mClient = null;
             }
@@ -159,12 +169,32 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
             Logger.debug("Other server with higher priority found, switch from server to client role");
             startClient(highestPrioSrv);
         } else if (!isServer() && highestPrioSrv == null) {
-            Logger.debug("No server available anymore, start server");
+            Logger.debug("No server available, start server");
             startServer();
         } else if (!isServer() && highestPrioSrv != null && !highestPrioSrv.equals(mRemoteHost)) {
             Logger.debug("Switch to higher priority server");
             startClient(highestPrioSrv);
         }
+    }
+
+    @Override
+    public void onConnect() {
+        fireOnConnect();
+    }
+
+    @Override
+    public void onDisconnect() {
+        fireOnDisconnect();
+    }
+
+    @Override
+    public void onRemoteNodeConnected(long nodeId) {
+        fireOnRemoteNoteConnected(nodeId);
+    }
+
+    @Override
+    public void onRemoteNodeDisconnected(long nodeId) {
+        fireOnRemoteNoteDisconnected(nodeId);
     }
 
     private static class AddressChecker implements Comparator<InetAddress> {

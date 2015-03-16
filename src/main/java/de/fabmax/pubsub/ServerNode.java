@@ -1,5 +1,6 @@
 package de.fabmax.pubsub;
 
+import de.fabmax.pubsub.util.DnsConfiguration;
 import de.fabmax.pubsub.util.DnsServiceAdvertiser;
 import org.pmw.tinylog.Logger;
 
@@ -13,8 +14,6 @@ import java.util.*;
  */
 public class ServerNode extends Node {
 
-    /** Type string used for DNS service discovery / zeroconf */
-    public static final String DNS_SD_TYPE = "_pubsub._tcp.local.";
     /** Default port used for pubsub protocol */
     public static final int DEFAULT_PORT = 9874;
 
@@ -47,10 +46,16 @@ public class ServerNode extends Node {
 
     protected void clientConnected(Socket clientSock) {
         try {
+            boolean first;
             synchronized (mClients) {
+                first = mClients.isEmpty();
                 ClientHandler handler = new ClientHandler(this, clientSock, mIsDaemon);
                 mClients.add(handler);
                 Logger.info("Client connected: " + handler.getClientAddress());
+            }
+            if (first) {
+                // the first client connected, fire onConnect event
+                fireOnConnect();
             }
         } catch (IOException e) {
             Logger.error("Unable to initialize client connection", e);
@@ -58,8 +63,10 @@ public class ServerNode extends Node {
     }
 
     protected void clientDisconnected(ClientHandler client) {
+        boolean last;
         synchronized (mClients) {
             mClients.remove(client);
+            last = mClients.isEmpty();
             long nodeId = client.getClientNodeId();
             if (nodeId != 0) {
                 mRegisteredClients.remove(nodeId);
@@ -69,9 +76,14 @@ public class ServerNode extends Node {
                         handler.sendControlMessage(unregisteredMsg);
                     }
                 }
+                fireOnRemoteNoteDisconnected(nodeId);
             }
         }
         Logger.info("Client disconnected: " + client.getClientAddress());
+        if (last) {
+            // last client disconnected, fire onDisconnect event
+            fireOnDisconnect();
+        }
     }
 
     protected void clientRegistered(long clientId, ClientHandler client) {
@@ -84,6 +96,7 @@ public class ServerNode extends Node {
                 }
             }
         }
+        fireOnRemoteNoteConnected(clientId);
     }
 
     protected void clientMessageReceived(ClientHandler client, Message message) {
@@ -91,10 +104,19 @@ public class ServerNode extends Node {
         publish(message, client, false);
     }
 
-    public void setServiceAdvertisingEnabled(boolean enabled) {
-        if (enabled && mServiceAdvertiser == null) {
-            mServiceAdvertiser = new DnsServiceAdvertiser(DNS_SD_TYPE, mPort);
-        } else if (!enabled && mServiceAdvertiser != null) {
+    public void enableServiceAdvertising(String serviceName) {
+        enableServiceAdvertising(serviceName, "_pubsub._tcp.local.");
+    }
+
+    public void enableServiceAdvertising(String serviceName, String serviceType) {
+        if (mServiceAdvertiser != null) {
+            mServiceAdvertiser.close();
+        }
+        mServiceAdvertiser = new DnsServiceAdvertiser(serviceName, serviceType, mPort);
+    }
+
+    public void disableServiceAdvertising() {
+        if (mServiceAdvertiser != null) {
             mServiceAdvertiser.close();
             mServiceAdvertiser = null;
         }
@@ -110,7 +132,7 @@ public class ServerNode extends Node {
     @Override
     public void close() {
         mClientAcceptor.close();
-        setServiceAdvertisingEnabled(false);
+        disableServiceAdvertising();
 
         synchronized (mClients) {
             for (ClientHandler handler : mClients) {
