@@ -38,7 +38,17 @@ public class ClientNode extends Node implements ConnectionListener {
 
     public ClientNode(InetAddress serverAddr, int serverPort, boolean isDaemon) {
         mIsDaemon = isDaemon;
+        mConnector = new ConnectThread(serverAddr, serverPort);
+        mControlChannel = openChannel(ControlMessages.CONTROL_CHANNEL_ID);
+        mControlChannel.addMessageListener(new MessageMapper(this));
+    }
 
+    /**
+     * Package visible constructor for AutoNode to start a client node with predefined node ID.
+     */
+    ClientNode(InetAddress serverAddr, int serverPort, boolean isDaemon, long nodeId) {
+        super(nodeId);
+        mIsDaemon = isDaemon;
         mConnector = new ConnectThread(serverAddr, serverPort);
         mControlChannel = openChannel(ControlMessages.CONTROL_CHANNEL_ID);
         mControlChannel.addMessageListener(new MessageMapper(this));
@@ -150,7 +160,8 @@ public class ClientNode extends Node implements ConnectionListener {
 
         @Override
         public void run() {
-            Logger.info("Client started, connecting to " + mServerAddr + ", port: " + mServerPort);
+            Logger.info("Client started, connecting to " + mServerAddr + ", port: " + mServerPort +
+                    ", nodeId: " + getNodeId());
             while (!mClosed) {
                 try {
                     Socket sock = new Socket(mServerAddr, mServerPort);

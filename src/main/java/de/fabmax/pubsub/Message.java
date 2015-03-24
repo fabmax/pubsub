@@ -53,9 +53,9 @@ public class Message {
 
     public String prettyPrint() {
         if (mData == null) {
-            return String.format("[%s:%s]", mChannelId, mTopic);
+            return String.format("[%s#%s]", mChannelId, mTopic);
         } else {
-            return String.format("[%s:%s]: %s", mChannelId, mTopic, mData.prettyPrint());
+            return String.format("[%s#%s] %s", mChannelId, mTopic, mData.prettyPrint());
         }
     }
 }

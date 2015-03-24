@@ -68,7 +68,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
             if (mServer == null) {
                 try {
                     Logger.info("Switching to server role");
-                    mServer = new ServerNode(mServerPort, true);
+                    mServer = new ServerNode(mServerPort, true, getNodeId());
                     mServer.addNodeListener(this);
                     mServer.enableServiceAdvertising(mServiceName, mServiceType);
 
@@ -102,7 +102,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
             if (mClient == null) {
                 mRemoteHost = service;
                 Logger.info("Switching to client role");
-                mClient = new ClientNode(mRemoteHost.address, mRemoteHost.port, true);
+                mClient = new ClientNode(mRemoteHost.address, mRemoteHost.port, true, getNodeId());
                 mClient.addNodeListener(this);
 
                 // register all active channels

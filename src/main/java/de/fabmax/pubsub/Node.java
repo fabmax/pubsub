@@ -16,7 +16,11 @@ public abstract class Node implements ChannelProvider, MessageListener {
 
     protected Node() {
         // naive approach for generating a unique id, but should be good enough
-        mNodeId = new Random().nextLong();
+        this(new Random().nextLong());
+    }
+
+    protected Node(long nodeId) {
+        mNodeId = nodeId;
     }
 
     public final long getNodeId() {

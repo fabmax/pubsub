@@ -44,6 +44,21 @@ public class ServerNode extends Node {
         Logger.info("Server started, nodeId: " + getNodeId());
     }
 
+    /**
+     * Package visible constructor for AutoNode to start a server node with predefined node ID.
+     */
+    ServerNode(int port, boolean isDaemon, long nodeId) throws IOException {
+        super(nodeId);
+        mIsDaemon = isDaemon;
+
+        mPort = port;
+        mClientAcceptor = new ClientAcceptor(this, port);
+        mClientAcceptor.setDaemon(mIsDaemon);
+        mClientAcceptor.start();
+
+        Logger.info("Server started, nodeId: " + getNodeId());
+    }
+
     protected void clientConnected(Socket clientSock) {
         try {
             boolean first;

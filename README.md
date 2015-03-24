@@ -64,10 +64,6 @@ client.close();
 server.close();
 ```
 
-##Planned features:
-* Auto-discovery of server nodes using dns-sd / zeroconf
-* Auto-nodes which can act as server or client, as required
-
 ##License:
 ```
 Copyright 2015 Max Thiele
