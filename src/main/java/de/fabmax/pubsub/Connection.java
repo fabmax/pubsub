@@ -31,8 +31,8 @@ class Connection {
         mInStream = mSocket.getInputStream();
         mOutStream = mSocket.getOutputStream();
 
-        mReceiver = new ConnectionReceiver(this, codecFactory);
-        mSender = new ConnectionSender(this, codecFactory);
+        mReceiver = new ConnectionReceiver(codecFactory);
+        mSender = new ConnectionSender(codecFactory);
         mReceiver.setDaemon(isDaemon);
         mSender.setDaemon(isDaemon);
     }
@@ -40,14 +40,6 @@ class Connection {
     public void setConnectionListener(ConnectionListener connectionListener) {
         mListener = connectionListener;
         mReceiver.setMessageListener(connectionListener);
-    }
-
-    protected InputStream getInputStream() {
-        return mInStream;
-    }
-
-    protected OutputStream getOutputStream() {
-        return mOutStream;
     }
 
     public void sendMessage(Message message) {
@@ -112,13 +104,11 @@ class Connection {
         return mClosed;
     }
 
-    private static class ConnectionReceiver extends Thread {
+    private class ConnectionReceiver extends Thread {
         private final Codec mCodec;
-        private final Connection mConnection;
         private MessageListener mMessageListener;
 
-        public ConnectionReceiver(Connection connection, Codec.CodecFactory<?> codecFactory) {
-            mConnection = connection;
+        public ConnectionReceiver(Codec.CodecFactory<?> codecFactory) {
             mCodec = codecFactory.createCodec();
         }
 
@@ -130,8 +120,8 @@ class Connection {
         public void run() {
             try {
                 byte[] buffer = new byte[4096];
-                InputStream inStream = mConnection.getInputStream();
-                while (!mConnection.isClosed()) {
+                InputStream inStream = mInStream;
+                while (!isClosed()) {
                     int len = inStream.read(buffer);
                     if (len > 0) {
                         mCodec.decodeData(buffer, 0, len);
@@ -141,26 +131,24 @@ class Connection {
                         }
                     } else if (len < 0) {
                         // connection closed
-                        mConnection.close();
+                        close();
                     }
                 }
             } catch (IOException e) {
                 // if closed socket was closed on purpose
-                if (!mConnection.isClosed()) {
+                if (!isClosed()) {
                     Logger.debug("Connection closed by server", e);
                 }
-                mConnection.close();
+                close();
             }
         }
     }
 
-    private static class ConnectionSender extends Thread {
+    private class ConnectionSender extends Thread {
         private final ArrayBlockingQueue<Message> mSendQueue = new ArrayBlockingQueue<>(10);
-        private final Connection mConnection;
         private final Codec mCodec;
 
-        public ConnectionSender(Connection connection, Codec.CodecFactory codecFactory) {
-            mConnection = connection;
+        public ConnectionSender(Codec.CodecFactory codecFactory) {
             mCodec = codecFactory.createCodec();
         }
 
@@ -173,20 +161,21 @@ class Connection {
         @Override
         public void run() {
             try {
-                while (!mConnection.isClosed()) {
+                while (!isClosed()) {
                     byte[] data = mCodec.encodeMessage(mSendQueue.take());
-                    OutputStream out = mConnection.getOutputStream();
+                    OutputStream out = mOutStream;
                     if (out != null) {
                         out.write(data);
                     }
                 }
             } catch (IOException | InterruptedException e) {
                 // if closed socket was closed on purpose
-                if (!mConnection.isClosed()) {
+                if (!isClosed()) {
                     Logger.error("Error in client sender", e);
                 }
-                mConnection.close();
+                close();
             }
+            Logger.debug("sender stopped");
         }
     }
 }

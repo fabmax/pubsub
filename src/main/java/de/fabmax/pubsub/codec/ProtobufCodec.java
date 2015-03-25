@@ -89,6 +89,9 @@ public class ProtobufCodec extends Codec {
                     Logger.error("To large packet size: " + pktLen + " bytes, max is: " + MAX_MSG_SIZE + " bytes");
                     // drop data
                     mBufferPos = 0;
+                } else {
+                    // packet is not yet complete
+                    break;
                 }
             }
         }
