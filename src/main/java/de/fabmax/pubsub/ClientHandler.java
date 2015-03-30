@@ -25,8 +25,8 @@ public class ClientHandler implements ChannelProvider, ConnectionListener {
 
     private final HashSet<String> mRegisteredChannels = new HashSet<>();
 
-    public ClientHandler(ServerNode server, Socket clientSock, boolean isDaemon) throws IOException {
-        mClientConnection = new Connection(clientSock, Codec.defaultCodecFactory, isDaemon);
+    public ClientHandler(ServerNode server, Socket clientSock) throws IOException {
+        mClientConnection = new Connection(clientSock, Codec.defaultCodecFactory, server.isDaemon());
         mClientAddress = clientSock.getRemoteSocketAddress().toString();
         mServer = server;
         mControlChannel = new Channel(this, ControlMessages.CONTROL_CHANNEL_ID);

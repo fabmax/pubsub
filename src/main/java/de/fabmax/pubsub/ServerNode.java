@@ -59,21 +59,20 @@ public class ServerNode extends Node {
         Logger.info("Server started, nodeId: " + getNodeId());
     }
 
-    protected void clientConnected(Socket clientSock) {
-        try {
-            boolean first;
-            synchronized (mClients) {
-                first = mClients.isEmpty();
-                ClientHandler handler = new ClientHandler(this, clientSock, mIsDaemon);
-                mClients.add(handler);
-                Logger.info("Client connected: " + handler.getClientAddress());
-            }
-            if (first) {
-                // the first client connected, fire onConnect event
-                fireOnConnect();
-            }
-        } catch (IOException e) {
-            Logger.error("Unable to initialize client connection", e);
+    public boolean isDaemon() {
+        return mIsDaemon;
+    }
+
+    protected void clientConnected(ClientHandler clientHandler) {
+        boolean first;
+        synchronized (mClients) {
+            first = mClients.isEmpty();
+            mClients.add(clientHandler);
+            Logger.info("Client connected: " + clientHandler.getClientAddress());
+        }
+        if (first) {
+            // the first client connected, fire onConnect event
+            fireOnConnect();
         }
     }
 

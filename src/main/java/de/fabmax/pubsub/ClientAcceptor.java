@@ -43,7 +43,8 @@ class ClientAcceptor extends Thread implements Closeable {
         while (!mClosed) {
             try {
                 Socket clientSock = mServerSock.accept();
-                mServer.clientConnected(clientSock);
+                ClientHandler handler = new ClientHandler(mServer, clientSock);
+                mServer.clientConnected(handler);
 
             } catch (IOException e) {
                 // if closed server sock was closed on purpose

@@ -175,7 +175,6 @@ class Connection {
                 }
                 close();
             }
-            Logger.debug("sender stopped");
         }
     }
 }
