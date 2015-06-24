@@ -18,11 +18,21 @@ public class ProtobufCodec extends Codec {
     private static final byte[] MAGIC_BYTES = new byte[] {
             (byte) (MAGIC >> 24), (byte) (MAGIC >> 16), (byte) (MAGIC >> 8), (byte) MAGIC
     };
-    private static final int MAX_MSG_SIZE = 512 * 1024;
+    private static final int DEFAULT_MAX_MSG_SIZE = 16 * 1024 * 1024;
 
     private final Deque<Message> mReceivedMessages = new ArrayDeque<>();
-    private final byte[] mReceiveBuffer = new byte[MAX_MSG_SIZE + 8];
+    private final byte[] mReceiveBuffer;
+    private final int mMaxMsgSize;
     private int mBufferPos = 0;
+
+    public ProtobufCodec() {
+        this(DEFAULT_MAX_MSG_SIZE);
+    }
+
+    public ProtobufCodec(int maxMsgSize) {
+        mMaxMsgSize = maxMsgSize;
+        mReceiveBuffer = new byte[maxMsgSize + 8];
+    }
 
     @Override
     public byte[] encodeMessage(Message message) {
@@ -85,8 +95,8 @@ public class ProtobufCodec extends Codec {
                     } else {
                         mBufferPos = 0;
                     }
-                } else if (pktLen >= MAX_MSG_SIZE) {
-                    Logger.error("To large packet size: " + pktLen + " bytes, max is: " + MAX_MSG_SIZE + " bytes");
+                } else if (pktLen >= mMaxMsgSize) {
+                    Logger.error("To large packet size: " + pktLen + " bytes, max is: " + mMaxMsgSize + " bytes");
                     // drop data
                     mBufferPos = 0;
                 } else {
