@@ -6,6 +6,7 @@ import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -16,8 +17,9 @@ import java.util.Locale;
 /**
  * Created by Max on 07.03.2015.
  */
-public class DnsServiceDiscovery implements Runnable, ServiceListener {
+public class DnsServiceDiscovery implements Closeable, Runnable, ServiceListener {
 
+    private final Thread mThread;
     private boolean mDiscoveryEnabled = true;
     private boolean mEnumerate = false;
     private final String mServiceType;
@@ -29,8 +31,7 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
 
     public DnsServiceDiscovery(String serviceType) {
         mServiceType = serviceType;
-        Thread thread = new Thread(this);
-        thread.start();
+        mThread = new Thread(this);
     }
 
     public void addDiscoveryListener(DiscoveryListener listener) {
@@ -47,6 +48,11 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
         }
     }
 
+    public void start() {
+        mThread.start();
+    }
+
+    @Override
     public void close() {
         mDiscoveryEnabled = false;
         synchronized (mLock) {
@@ -150,7 +156,7 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
     }
 
     public interface DiscoveryListener {
-        public void onDiscoveredServicesUpdated(List<DiscoveredService> discoveredServices);
+        void onDiscoveredServicesUpdated(List<DiscoveredService> discoveredServices);
     }
 
     public static class DiscoveredService {

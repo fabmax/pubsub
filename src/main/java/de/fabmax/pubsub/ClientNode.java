@@ -20,9 +20,13 @@ import java.util.Set;
 public class ClientNode extends Node implements ConnectionListener {
 
     private final boolean mIsDaemon;
-    private final ConnectThread mConnector;
-    private final Channel mControlChannel;
     private final HashSet<Long> mKnownNodeIds = new HashSet<>();
+
+    private final InetAddress mServerAddr;
+    private final int mServerPort;
+
+    private ConnectThread mConnector;
+    private Channel mControlChannel;
 
     public ClientNode(String serverAddr) throws UnknownHostException {
         this(serverAddr, ServerNode.DEFAULT_PORT);
@@ -38,9 +42,8 @@ public class ClientNode extends Node implements ConnectionListener {
 
     public ClientNode(InetAddress serverAddr, int serverPort, boolean isDaemon) {
         mIsDaemon = isDaemon;
-        mConnector = new ConnectThread(serverAddr, serverPort);
-        mControlChannel = openChannel(ControlMessages.CONTROL_CHANNEL_ID);
-        mControlChannel.addMessageListener(new MessageMapper(this));
+        mServerAddr = serverAddr;
+        mServerPort = serverPort;
     }
 
     /**
@@ -49,7 +52,13 @@ public class ClientNode extends Node implements ConnectionListener {
     ClientNode(InetAddress serverAddr, int serverPort, boolean isDaemon, long nodeId) {
         super(nodeId);
         mIsDaemon = isDaemon;
-        mConnector = new ConnectThread(serverAddr, serverPort);
+        mServerAddr = serverAddr;
+        mServerPort = serverPort;
+    }
+
+    @Override
+    public void open() {
+        mConnector = new ConnectThread(mServerAddr, mServerPort);
         mControlChannel = openChannel(ControlMessages.CONTROL_CHANNEL_ID);
         mControlChannel.addMessageListener(new MessageMapper(this));
     }

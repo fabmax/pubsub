@@ -5,9 +5,9 @@ package de.fabmax.pubsub;
  */
 public interface NodeListener {
 
-    public void onConnect();
-    public void onDisconnect();
-    public void onRemoteNodeConnected(long nodeId);
-    public void onRemoteNodeDisconnected(long nodeId);
+    void onConnect();
+    void onDisconnect();
+    void onRemoteNodeConnected(long nodeId);
+    void onRemoteNodeDisconnected(long nodeId);
 
 }

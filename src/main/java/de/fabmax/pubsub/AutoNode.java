@@ -47,9 +47,13 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
         mAddressChecker = new AddressChecker();
         mDiscovery = new DnsServiceDiscovery(serviceType);
         mDiscovery.addDiscoveryListener(this);
+    }
 
+    @Override
+    public void open() {
         // don't start server yet, wait for discovery result, which is initially fired even if no services are found
         //startServer();
+        mDiscovery.start();
     }
 
     @Override
@@ -71,6 +75,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
                     mServer = new ServerNode(mServerPort, true, getNodeId());
                     mServer.addNodeListener(this);
                     mServer.enableServiceAdvertising(mServiceName, mServiceType);
+                    mServer.open();
 
                     // register all active channels
                     for (Channel ch : mChannels.values()) {
@@ -104,6 +109,7 @@ public class AutoNode extends Node implements DnsServiceDiscovery.DiscoveryListe
                 Logger.info("Switching to client role");
                 mClient = new ClientNode(mRemoteHost.address, mRemoteHost.port, true, getNodeId());
                 mClient.addNodeListener(this);
+                mClient.open();
 
                 // register all active channels
                 for (Channel ch : mChannels.values()) {

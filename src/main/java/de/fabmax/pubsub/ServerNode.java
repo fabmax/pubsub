@@ -2,6 +2,7 @@ package de.fabmax.pubsub;
 
 import de.fabmax.pubsub.util.DnsConfiguration;
 import de.fabmax.pubsub.util.DnsServiceAdvertiser;
+import de.fabmax.pubsub.util.MessageMapper;
 import org.pmw.tinylog.Logger;
 
 import java.io.IOException;
@@ -19,43 +20,39 @@ public class ServerNode extends Node {
 
     private final boolean mIsDaemon;
     private final int mPort;
-    private final ClientAcceptor mClientAcceptor;
     private final List<ClientHandler> mClients = new ArrayList<>();
     private final HashMap<Long, ClientHandler> mRegisteredClients = new HashMap<>();
 
+    private ClientAcceptor mClientAcceptor;
     private DnsServiceAdvertiser mServiceAdvertiser = null;
 
-    public ServerNode() throws IOException {
+    public ServerNode() {
         this(DEFAULT_PORT);
     }
 
-    public ServerNode(int port) throws IOException {
+    public ServerNode(int port) {
         this(port, false);
     }
 
-    public ServerNode(int port, boolean isDaemon) throws IOException {
+    public ServerNode(int port, boolean isDaemon) {
         mIsDaemon = isDaemon;
-
         mPort = port;
-        mClientAcceptor = new ClientAcceptor(this, port);
-        mClientAcceptor.setDaemon(mIsDaemon);
-        mClientAcceptor.start();
-
-        Logger.info("Server started, nodeId: " + getNodeId());
     }
 
     /**
      * Package visible constructor for AutoNode to start a server node with predefined node ID.
      */
-    ServerNode(int port, boolean isDaemon, long nodeId) throws IOException {
+    ServerNode(int port, boolean isDaemon, long nodeId) {
         super(nodeId);
         mIsDaemon = isDaemon;
-
         mPort = port;
-        mClientAcceptor = new ClientAcceptor(this, port);
+    }
+
+    @Override
+    public void open() throws IOException {
+        mClientAcceptor = new ClientAcceptor(this, mPort);
         mClientAcceptor.setDaemon(mIsDaemon);
         mClientAcceptor.start();
-
         Logger.info("Server started, nodeId: " + getNodeId());
     }
 
