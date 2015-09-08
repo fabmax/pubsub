@@ -2,12 +2,14 @@ package de.fabmax.pubsub;
 
 import org.pmw.tinylog.Logger;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.*;
 
 /**
  * Created by Max on 24.02.2015.
  */
-public abstract class Node implements ChannelProvider, MessageListener {
+public abstract class Node implements Closeable, ChannelProvider, MessageListener {
 
     private final long mNodeId;
 
@@ -28,39 +30,54 @@ public abstract class Node implements ChannelProvider, MessageListener {
     }
 
     public void addNodeListener(NodeListener listener) {
-        mNodeListeners.add(listener);
+        synchronized (mNodeListeners) {
+            mNodeListeners.add(listener);
+        }
     }
 
     public void removeNodeListener(NodeListener listener) {
-        mNodeListeners.remove(listener);
+        synchronized (mNodeListeners) {
+            mNodeListeners.remove(listener);
+        }
     }
 
     protected void fireOnConnect() {
-        for (NodeListener l : mNodeListeners) {
-            l.onConnect();
+        synchronized (mNodeListeners) {
+            for (NodeListener l : mNodeListeners) {
+                l.onConnect();
+            }
         }
     }
 
     protected void fireOnDisconnect() {
-        for (NodeListener l : mNodeListeners) {
-            l.onDisconnect();
+        synchronized (mNodeListeners) {
+            for (NodeListener l : mNodeListeners) {
+                l.onDisconnect();
+            }
         }
     }
 
     protected void fireOnRemoteNoteConnected(long nodeId) {
-        for (NodeListener l : mNodeListeners) {
-            l.onRemoteNodeConnected(nodeId);
+        synchronized (mNodeListeners) {
+            for (NodeListener l : mNodeListeners) {
+                l.onRemoteNodeConnected(nodeId);
+            }
         }
     }
 
     protected void fireOnRemoteNoteDisconnected(long nodeId) {
-        for (NodeListener l : mNodeListeners) {
-            l.onRemoteNodeDisconnected(nodeId);
+        synchronized (mNodeListeners) {
+            for (NodeListener l : mNodeListeners) {
+                l.onRemoteNodeDisconnected(nodeId);
+            }
         }
     }
 
     public abstract Set<Long> getKnownNodeIds();
 
+    public abstract void open() throws IOException;
+
+    @Override
     public abstract void close();
 
     @Override

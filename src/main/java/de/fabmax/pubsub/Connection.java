@@ -43,10 +43,11 @@ class Connection {
     }
 
     public void sendMessage(Message message) {
-        if (mClosed) {
-            throw new IllegalStateException("ClientHandler is closed");
+        if (!mClosed) {
+            mSender.sendData(message);
+        } else {
+            Logger.debug("Discarding message: connection is closed");
         }
-        mSender.sendData(message);
     }
 
     public void open() {
@@ -145,7 +146,7 @@ class Connection {
     }
 
     private class ConnectionSender extends Thread {
-        private final ArrayBlockingQueue<Message> mSendQueue = new ArrayBlockingQueue<>(10);
+        private final ArrayBlockingQueue<Message> mSendQueue = new ArrayBlockingQueue<>(1000);
         private final Codec mCodec;
 
         public ConnectionSender(Codec.CodecFactory codecFactory) {

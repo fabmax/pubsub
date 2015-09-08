@@ -28,6 +28,9 @@ public class SimpleDemo {
         Node server = new ServerNode();
         Node client = new ClientNode("localhost");
 
+        server.open();
+        client.open();
+
         // register the same channel on server and client
         Channel clientChannel = client.openChannel("test");
         Channel serverChannel = server.openChannel("test");
