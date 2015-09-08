@@ -150,15 +150,17 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
     }
 
     public interface DiscoveryListener {
-        public void onDiscoveredServicesUpdated(List<DiscoveredService> discoveredServices);
+        void onDiscoveredServicesUpdated(List<DiscoveredService> discoveredServices);
     }
 
     public static class DiscoveredService {
+        public final String name;
         public final String type;
         public final InetAddress address;
         public final int port;
 
-        private DiscoveredService(String type, InetAddress address, int port) {
+        private DiscoveredService(String name, String type, InetAddress address, int port) {
+            this.name = name;
             this.type = type;
             this.address = address;
             this.port = port;
@@ -167,7 +169,7 @@ public class DnsServiceDiscovery implements Runnable, ServiceListener {
         private static DiscoveredService create(ServiceInfo info) {
             InetAddress[] addrs = info.getInetAddresses();
             if (addrs != null && addrs.length > 0) {
-                return new DiscoveredService(info.getType(), addrs[0], info.getPort());
+                return new DiscoveredService(info.getName(), info.getType(), addrs[0], info.getPort());
             } else {
                 return null;
             }

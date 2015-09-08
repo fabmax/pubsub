@@ -54,9 +54,12 @@ public class Bundle {
     private final Map<String, Item> mData = new Hashtable<>();
 
     private <T> T typedGet(Class<T> clazz, String key) {
-        Object o = mData.get(key).value;
-        if (o != null && o.getClass() == clazz) {
-            return clazz.cast(o);
+        Item it = mData.get(key);
+        if (it != null) {
+            Object o = it.value;
+            if (o != null && o.getClass() == clazz) {
+                return clazz.cast(o);
+            }
         }
         return null;
     }
