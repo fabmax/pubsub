@@ -60,7 +60,7 @@ public class DnsServiceDiscovery implements Closeable, Runnable, ServiceListener
         }
     }
 
-    private void triggerFullEnumeration() {
+    public void triggerFullEnumeration() {
         synchronized (mLock) {
             mEnumerate = true;
             mLock.notify();
@@ -74,6 +74,7 @@ public class DnsServiceDiscovery implements Closeable, Runnable, ServiceListener
     }
 
     private void enumerateServices(JmDNS dns) {
+        dns.unregisterAllServices();
         ServiceInfo[] services = dns.list(mServiceType);
 
         synchronized (mServices) {
@@ -92,39 +93,42 @@ public class DnsServiceDiscovery implements Closeable, Runnable, ServiceListener
     public void run() {
         JmDNS dns = null;
 
-        try {
-            dns = JmDNS.create(DnsConfiguration.getDiscoveryBindAddress());
-            dns.addServiceListener(mServiceType, this);
-            Logger.info("Service discovery started, bind address: " + DnsConfiguration.getDiscoveryBindAddress() +
-                        ", service type: " + mServiceType);
-
-            // do initial discovery, to force fireDiscoveryUpdate(), even if no services are found
-            enumerateServices(dns);
-        } catch (IOException e) {
-            Logger.error("Failed starting service discovery: " + e.getClass().getName() + ": " + e.getMessage());
-        }
+        Logger.debug("Service discovery started, bind address: " + DnsConfiguration.getDiscoveryBindAddress() +
+                ", service type: " + mServiceType);
 
         // wait until we get closed
-        while (dns != null && mDiscoveryEnabled) {
+        while (mDiscoveryEnabled) {
             try {
-                synchronized (mLock) {
-                    if (mEnumerate) {
-                        mEnumerate = false;
-                        enumerateServices(dns);
-                    }
-                    mLock.wait();
-                }
-            } catch (InterruptedException e) {
-                mDiscoveryEnabled = false;
-                e.printStackTrace();
-            }
-        }
+                dns = JmDNS.create(DnsConfiguration.getDiscoveryBindAddress());
+                dns.addServiceListener(mServiceType, this);
 
-        if (dns != null) {
-            try {
-                dns.close();
+                // do initial discovery, to force fireDiscoveryUpdate(), even if no services are found
+                //enumerateServices(dns);
             } catch (IOException e) {
-                Logger.error("Exception on closing discovery: " + e.getClass().getName() + ": " + e.getMessage());
+                Logger.error("Failed starting service discovery: " + e.getClass().getName() + ": " + e.getMessage());
+            }
+
+            if (dns != null) {
+                triggerFullEnumeration();
+                try {
+                    synchronized (mLock) {
+                        if (mEnumerate) {
+                            mEnumerate = false;
+                            enumerateServices(dns);
+                        }
+                        // sleep for 10 seconds
+                        mLock.wait(10000);
+                    }
+                } catch (InterruptedException e) {
+                    mDiscoveryEnabled = false;
+                    e.printStackTrace();
+                }
+                try {
+                    dns.removeServiceListener(mServiceType, this);
+                    dns.close();
+                } catch (IOException e) {
+                    Logger.error("Exception on closing discovery: " + e.getClass().getName() + ": " + e.getMessage());
+                }
             }
         }
         Logger.info("Service discovery stopped");
@@ -145,11 +149,13 @@ public class DnsServiceDiscovery implements Closeable, Runnable, ServiceListener
     @Override
     public void serviceResolved(ServiceEvent event) {
         String addrs = Arrays.toString(event.getInfo().getInetAddresses()) + ", port:" + event.getInfo().getPort();
-        Logger.debug("Service resolved: " + event.getName() + "[" + event.getType() + "]: " + addrs);
         DiscoveredService service = DiscoveredService.create(event.getInfo());
         if (service != null) {
             synchronized (mServices) {
-                mServices.add(service);
+                if (!mServices.contains(service)) {
+                    Logger.debug("Service resolved: " + event.getName() + "[" + event.getType() + "]: " + addrs);
+                    mServices.add(service);
+                }
             }
             fireDiscoveryUpdate();
         }
