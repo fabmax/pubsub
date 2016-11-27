@@ -50,8 +50,8 @@ public class PtpMessage extends Message {
         return mData.getLong(KEY_TO_NODE);
     }
 
-    @Override
-    public void setData(Bundle data) {
-        mData.putBundle(data);
-    }
+//    @Override
+//    public void setData(Bundle data) {
+//        mData.putBundle(data);
+//    }
 }

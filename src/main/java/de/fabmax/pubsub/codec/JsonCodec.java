@@ -50,7 +50,8 @@ public class JsonCodec extends Codec {
             try {
                 mReceivedMessages.addLast(deserializeMessage(recv));
             } catch (Exception e) {
-                Logger.error("Failed to deserialize message: " + mReceiveBuffer, e);
+                Logger.error("Failed to deserialize message: " + recv, e);
+                e.printStackTrace();
             }
         }
     }
@@ -85,60 +86,21 @@ public class JsonCodec extends Codec {
             String key = item.getString("k");
             Bundle.ElementType type = Enum.valueOf(Bundle.ElementType.class, item.getString("t"));
             switch (type) {
-                case BOOLEAN:
-                    b.putBoolean(key, item.getBoolean("v"));
-                    break;
-                case BOOLEAN_ARRAY:
-                    b.putBooleanArray(key, booleanArray(item.getJSONArray("v")));
-                    break;
-                case BYTE:
-                    b.putByte(key, (byte) item.getInt("v"));
-                    break;
-                case BYTE_ARRAY:
-                    b.putByteArray(key, Base64.decode(item.getString("v")));
-                    break;
-                case CHAR:
-                    b.putChar(key, (char) item.getInt("v"));
-                    break;
-                case CHAR_ARRAY:
-                    b.putCharArray(key, charArray(item.getJSONArray("v")));
-                    break;
-                case DOUBLE:
-                    b.putDouble(key, item.getDouble("v"));
-                    break;
-                case DOUBLE_ARRAY:
-                    b.putDoubleArray(key, doubleArray(item.getJSONArray("v")));
-                    break;
-                case FLOAT:
-                    b.putFloat(key, (float) item.getDouble("v"));
-                    break;
-                case FLOAT_ARRAY:
-                    b.putFloatArray(key, floatArray(item.getJSONArray("v")));
-                    break;
-                case INT:
-                    b.putInt(key, item.getInt("v"));
-                    break;
-                case INT_ARRAY:
-                    b.putIntArray(key, intArray(item.getJSONArray("v")));
-                    break;
-                case LONG:
-                    b.putLong(key, item.getLong("v"));
-                    break;
-                case LONG_ARRAY:
-                    b.putLongArray(key, longArray(item.getJSONArray("v")));
-                    break;
-                case SHORT:
-                    b.putShort(key, (short) item.getInt("v"));
-                    break;
-                case SHORT_ARRAY:
-                    b.putShortArray(key, shortArray(item.getJSONArray("v")));
-                    break;
-                case STRING:
-                    b.putString(key, item.getString("v"));
-                    break;
-                case STRING_ARRAY:
-                    b.putStringArray(key, stringArray(item.getJSONArray("v")));
-                    break;
+                case BOOLEAN:       b.putBoolean(key, item.getBoolean("v")); break;
+                case BOOLEAN_ARRAY: b.putBooleanArray(key, booleanArray(item.getJSONArray("v"))); break;
+                case BUNDLE:        b.putBundle(key, deserializeBundle(item.getJSONArray("v"))); break;
+                case BUNDLE_ARRAY:  b.putBundleArray(key, bundleArray(item.getJSONArray("v"))); break;
+                case BYTE_ARRAY:    b.putByteArray(key, Base64.decode(item.getString("v"))); break;
+                case DOUBLE:        b.putDouble(key, item.getDouble("v")); break;
+                case DOUBLE_ARRAY:  b.putDoubleArray(key, doubleArray(item.getJSONArray("v"))); break;
+                case FLOAT:         b.putFloat(key, (float) item.getDouble("v")); break;
+                case FLOAT_ARRAY:   b.putFloatArray(key, floatArray(item.getJSONArray("v"))); break;
+                case INT:           b.putInt(key, item.getInt("v")); break;
+                case INT_ARRAY:     b.putIntArray(key, intArray(item.getJSONArray("v"))); break;
+                case LONG:          b.putLong(key, item.getLong("v")); break;
+                case LONG_ARRAY:    b.putLongArray(key, longArray(item.getJSONArray("v"))); break;
+                case STRING:        b.putString(key, item.getString("v")); break;
+                case STRING_ARRAY:  b.putStringArray(key, stringArray(item.getJSONArray("v"))); break;
             }
         }
         return b;
@@ -153,60 +115,21 @@ public class JsonCodec extends Codec {
             item.put("k", key);
             item.put("t", type.toString());
             switch (type) {
-                case BOOLEAN:
-                    item.put("v", bundle.getBoolean(key));
-                    break;
-                case BOOLEAN_ARRAY:
-                    item.put("v", booleanArray(bundle.getBooleanArray(key)));
-                    break;
-                case BYTE:
-                    item.put("v", bundle.getByte(key));
-                    break;
-                case BYTE_ARRAY:
-                    item.put("v", Base64.encode(bundle.getByteArray(key)));
-                    break;
-                case CHAR:
-                    item.put("v", (int) bundle.getChar(key));
-                    break;
-                case CHAR_ARRAY:
-                    item.put("v", charArray(bundle.getCharArray(key)));
-                    break;
-                case DOUBLE:
-                    item.put("v", bundle.getDouble(key));
-                    break;
-                case DOUBLE_ARRAY:
-                    item.put("v", doubleArray(bundle.getDoubleArray(key)));
-                    break;
-                case FLOAT:
-                    item.put("v", bundle.getFloat(key));
-                    break;
-                case FLOAT_ARRAY:
-                    item.put("v", floatArray(bundle.getFloatArray(key)));
-                    break;
-                case INT:
-                    item.put("v", bundle.getInt(key));
-                    break;
-                case INT_ARRAY:
-                    item.put("v", intArray(bundle.getIntArray(key)));
-                    break;
-                case LONG:
-                    item.put("v", bundle.getLong(key));
-                    break;
-                case LONG_ARRAY:
-                    item.put("v", longArray(bundle.getLongArray(key)));
-                    break;
-                case SHORT:
-                    item.put("v", bundle.getShort(key));
-                    break;
-                case SHORT_ARRAY:
-                    item.put("v", shortArray(bundle.getShortArray(key)));
-                    break;
-                case STRING:
-                    item.put("v", bundle.getString(key));
-                    break;
-                case STRING_ARRAY:
-                    item.put("v", stringArray(bundle.getStringArray(key)));
-                    break;
+                case BOOLEAN:       item.put("v", bundle.getBoolean(key)); break;
+                case BOOLEAN_ARRAY: item.put("v", booleanArray(bundle.getBooleanArray(key))); break;
+                case BUNDLE:        item.put("v", serializeBundle(bundle.getBundle(key))); break;
+                case BUNDLE_ARRAY:  item.put("v", bundleArray(bundle.getBundleArray(key))); break;
+                case BYTE_ARRAY:    item.put("v", Base64.encode(bundle.getByteArray(key))); break;
+                case DOUBLE:        item.put("v", bundle.getDouble(key)); break;
+                case DOUBLE_ARRAY:  item.put("v", doubleArray(bundle.getDoubleArray(key))); break;
+                case FLOAT:         item.put("v", bundle.getFloat(key)); break;
+                case FLOAT_ARRAY:   item.put("v", floatArray(bundle.getFloatArray(key))); break;
+                case INT:           item.put("v", bundle.getInt(key)); break;
+                case INT_ARRAY:     item.put("v", intArray(bundle.getIntArray(key))); break;
+                case LONG:          item.put("v", bundle.getLong(key)); break;
+                case LONG_ARRAY:    item.put("v", longArray(bundle.getLongArray(key))); break;
+                case STRING:        item.put("v", bundle.getString(key)); break;
+                case STRING_ARRAY:  item.put("v", stringArray(bundle.getStringArray(key))); break;
             }
             data.put(item);
         }
@@ -229,18 +152,18 @@ public class JsonCodec extends Codec {
         return arr;
     }
 
-    private JSONArray charArray(char[] array) {
+    private JSONArray bundleArray(Bundle[] array) {
         JSONArray arr = new JSONArray();
-        for (char c : array) {
-            arr.put(c);
+        for (Bundle b : array) {
+            arr.put(serializeBundle(b));
         }
         return arr;
     }
 
-    private char[] charArray(JSONArray array) {
-        char[] arr = new char[array.length()];
+    private Bundle[] bundleArray(JSONArray array) {
+        Bundle[] arr = new Bundle[array.length()];
         for (int i = 0; i < array.length(); i++) {
-            arr[i] = (char) array.getInt(i);
+            arr[i] = deserializeBundle(array.getJSONArray(i));
         }
         return arr;
     }
@@ -305,22 +228,6 @@ public class JsonCodec extends Codec {
         long[] arr = new long[array.length()];
         for (int i = 0; i < array.length(); i++) {
             arr[i] = array.getLong(i);
-        }
-        return arr;
-    }
-
-    private JSONArray shortArray(short[] array) {
-        JSONArray arr = new JSONArray();
-        for (short s : array) {
-            arr.put(s);
-        }
-        return arr;
-    }
-
-    private short[] shortArray(JSONArray array) {
-        short[] arr = new short[array.length()];
-        for (int i = 0; i < array.length(); i++) {
-            arr[i] = (short) array.getInt(i);
         }
         return arr;
     }

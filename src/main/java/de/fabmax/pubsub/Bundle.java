@@ -13,10 +13,7 @@ public class Bundle {
     public enum ElementType {
         BOOLEAN(Boolean.class),
         BOOLEAN_ARRAY(boolean[].class),
-        BYTE(Byte.class),
         BYTE_ARRAY(byte[].class),
-        CHAR(Character.class),
-        CHAR_ARRAY(char[].class),
         DOUBLE(Double.class),
         DOUBLE_ARRAY(double[].class),
         FLOAT(Float.class),
@@ -25,10 +22,10 @@ public class Bundle {
         INT_ARRAY(int[].class),
         LONG(Long.class),
         LONG_ARRAY(long[].class),
-        SHORT(Short.class),
-        SHORT_ARRAY(short[].class),
         STRING(String.class),
-        STRING_ARRAY(String[].class);
+        STRING_ARRAY(String[].class),
+        BUNDLE(Bundle.class),
+        BUNDLE_ARRAY(Bundle[].class);
 
         private Class<?> mType;
 
@@ -97,20 +94,16 @@ public class Bundle {
         return typedGet(boolean[].class, key);
     }
 
-    public Byte getByte(String key) {
-        return typedGet(Byte.class, key);
+    public Bundle getBundle(String key) {
+        return typedGet(Bundle.class, key);
+    }
+
+    public Bundle[] getBundleArray(String key) {
+        return typedGet(Bundle[].class, key);
     }
 
     public byte[] getByteArray(String key) {
         return typedGet(byte[].class, key);
-    }
-
-    public Character getChar(String key) {
-        return typedGet(Character.class, key);
-    }
-
-    public char[] getCharArray(String key) {
-        return typedGet(char[].class, key);
     }
 
     public Double getDouble(String key) {
@@ -145,14 +138,6 @@ public class Bundle {
         return typedGet(long[].class, key);
     }
 
-    public Short getShort(String key) {
-        return typedGet(Short.class, key);
-    }
-
-    public short[] getShortArray(String key) {
-        return typedGet(short[].class, key);
-    }
-
     public String getString(String key) {
         return typedGet(String.class, key);
     }
@@ -168,12 +153,6 @@ public class Bundle {
         mData.put(key, new Item(type, value));
     }
 
-    public void putBundle(Bundle other) {
-        for (String key : other.keySet()) {
-            put(key, other.getType(key), other.get(key));
-        }
-    }
-
     public void putBoolean(String key, boolean value) {
         mData.put(key, new Item(ElementType.BOOLEAN, value));
     }
@@ -182,20 +161,16 @@ public class Bundle {
         mData.put(key, new Item(ElementType.BOOLEAN_ARRAY, value));
     }
 
-    public void putByte(String key, byte value) {
-        mData.put(key, new Item(ElementType.BYTE, value));
+    public void putBundle(String key, Bundle value) {
+        mData.put(key, new Item(ElementType.BUNDLE, value));
+    }
+
+    public void putBundleArray(String key, Bundle[] value) {
+        mData.put(key, new Item(ElementType.BUNDLE_ARRAY, value));
     }
 
     public void putByteArray(String key, byte[] value) {
         mData.put(key, new Item(ElementType.BYTE_ARRAY, value));
-    }
-
-    public void putChar(String key, char value) {
-        mData.put(key, new Item(ElementType.CHAR, value));
-    }
-
-    public void putCharArray(String key, char[] value) {
-        mData.put(key, new Item(ElementType.CHAR_ARRAY, value));
     }
 
     public void putDouble(String key, double value) {
@@ -230,14 +205,6 @@ public class Bundle {
         mData.put(key, new Item(ElementType.LONG_ARRAY, value));
     }
 
-    public void putShort(String key, short value) {
-        mData.put(key, new Item(ElementType.SHORT, value));
-    }
-
-    public void putShortArray(String key, short[] value) {
-        mData.put(key, new Item(ElementType.SHORT_ARRAY, value));
-    }
-
     public void putString(String key, String value) {
         mData.put(key, new Item(ElementType.STRING, value));
     }
@@ -247,24 +214,46 @@ public class Bundle {
     }
 
     public String prettyPrint() {
-        StringBuffer buf = new StringBuffer();
+        return print("");
+    }
+
+    private String print(String indent) {
+        StringBuilder buf = new StringBuilder();
         buf.append("{\n");
         for (String key : keySet()) {
             ElementType t = getType(key);
             String val;
-            if (t == ElementType.BOOLEAN_ARRAY)      val = Arrays.toString((boolean[])get(key));
-            else if (t == ElementType.BYTE_ARRAY)    val = Arrays.toString((byte[])get(key));
-            else if (t == ElementType.CHAR_ARRAY)    val = Arrays.toString((char[])get(key));
-            else if (t == ElementType.DOUBLE_ARRAY)  val = Arrays.toString((double[])get(key));
-            else if (t == ElementType.FLOAT_ARRAY)   val = Arrays.toString((float[])get(key));
-            else if (t == ElementType.INT_ARRAY)     val = Arrays.toString((int[])get(key));
-            else if (t == ElementType.LONG_ARRAY)    val = Arrays.toString((long[])get(key));
-            else if (t == ElementType.SHORT_ARRAY)   val = Arrays.toString((short[])get(key));
-            else if (t == ElementType.STRING_ARRAY)  val = Arrays.toString((String[])get(key));
-            else val = get(key).toString();
-            buf.append(String.format("  \"%s\": %s\n", key, val));
+            switch (t) {
+                case BOOLEAN_ARRAY: val = Arrays.toString(getBooleanArray(key)); break;
+                case BYTE_ARRAY:    val = Arrays.toString(getByteArray(key));    break;
+                case DOUBLE_ARRAY:  val = Arrays.toString(getDoubleArray(key));  break;
+                case FLOAT_ARRAY:   val = Arrays.toString(getFloatArray(key));   break;
+                case INT_ARRAY:     val = Arrays.toString(getIntArray(key));     break;
+                case LONG_ARRAY:    val = Arrays.toString(getLongArray(key));    break;
+                case STRING_ARRAY:  val = Arrays.toString(getStringArray(key));  break;
+                case BUNDLE:        val = getBundle(key).print(indent + "  ");   break;
+                case BUNDLE_ARRAY:  val = print(getBundleArray(key), indent + "  "); break;
+                default: val = get(key).toString(); break;
+            }
+            buf.append(String.format("%s  \"%s\": %s\n", indent, key, val));
         }
-        buf.append("}");
+        buf.append(indent).append("}");
         return buf.toString();
+    }
+
+    private static String print(Bundle[] bundles, String indent) {
+        StringBuilder buf = new StringBuilder();
+        buf.append("[");
+        for (int i = 0; i < bundles.length; i++) {
+            if (i > 0) {
+                buf.append(indent);
+            }
+            Bundle bnd = bundles[i];
+            buf.append(bnd.print(indent + "  "));
+            if (i < bundles.length - 1) {
+                buf.append(",\n").append(indent);
+            }
+        }
+        return buf.append("]").toString();
     }
 }

@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package pubsub;
+
+option java_package = "de.fabmax.pubsub.codec";
+//option java_outer_classname = "BundleMessage";
+
+message BundleMessage {
+	string channel = 1;
+	string topic = 2;
+
+	message BoolArray {
+		repeated bool array = 1;
+	}
+
+	message DoubleArray {
+		repeated double array = 1;
+	}
+
+	message FloatArray {
+		repeated float array = 1;
+	}
+
+	message Sint32Array {
+		repeated sint32 array = 1;
+	}
+
+	message Sint64Array {
+		repeated sint64 array = 1;
+	}
+
+	message StringArray {
+		repeated string array = 1;
+	}
+
+	message BundleArray {
+		repeated Bundle array = 1;
+	}
+
+	message Item {
+		string key = 1;
+		oneof value {
+			bool boolVal = 3;
+			BoolArray boolArray = 4;
+			Bundle bundleVal = 5;
+			BundleArray bundleArray = 6;
+			bytes byteArray = 7;
+			double doubleVal = 8;
+			DoubleArray doubleArray = 9;
+			float floatVal = 10;
+			FloatArray floatArray = 11;
+			sint32 intVal = 12;
+			Sint32Array intArray = 13;
+			sint64 longVal = 14;
+			Sint64Array longArray = 15;
+			string stringVal = 16;
+			StringArray stringArray = 17;
+		}
+	}
+
+	message Bundle {
+		repeated Item data = 1;
+	}
+
+	Bundle data = 3;
+}

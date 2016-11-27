@@ -91,10 +91,7 @@ public class SimpleDemo {
             System.out.println("data:");
             System.out.println("bool: " + data.getBoolean("bool"));
             System.out.println("boolArray: " + Arrays.toString(data.getBooleanArray("boolArray")));
-            System.out.println("byte: " + data.getByte("byte"));
             System.out.println("byteArray: " + Arrays.toString(data.getByteArray("byteArray")));
-            System.out.println("char: " + data.getChar("char"));
-            System.out.println("charArray: " + Arrays.toString(data.getCharArray("charArray")));
             System.out.println("double: " + data.getDouble("double"));
             System.out.println("doubleArray: " + Arrays.toString(data.getDoubleArray("doubleArray")));
             System.out.println("float: " + data.getFloat("float"));
@@ -103,8 +100,6 @@ public class SimpleDemo {
             System.out.println("intArray: " + Arrays.toString(data.getIntArray("intArray")));
             System.out.println("long: " + data.getLong("long"));
             System.out.println("longArray: " + Arrays.toString(data.getLongArray("longArray")));
-            System.out.println("short: " + data.getShort("short"));
-            System.out.println("shortArray: " + Arrays.toString(data.getShortArray("shortArray")));
             System.out.println("string: " + data.getString("string"));
             System.out.println("stringArray: " + Arrays.toString(data.getStringArray("stringArray")));
         }
@@ -172,10 +167,7 @@ public class SimpleDemo {
         Bundle data = new Bundle();
         data.putBoolean("bool", true);
         data.putBooleanArray("boolArray", new boolean[]{true, false, false, false, true, true});
-        data.putByte("byte", (byte) 8);
         data.putByteArray("byteArray", "Hallo Welt".getBytes());
-        data.putChar("char", 'a');
-        data.putCharArray("charArray", new char[]{'a', 'b', 'c'});
         data.putDouble("double", 3.75);
         data.putDoubleArray("doubleArray", new double[]{1.034, 2.342, 4.324e100});
         data.putFloat("float", 3.25f);
@@ -184,8 +176,6 @@ public class SimpleDemo {
         data.putIntArray("intArray", new int[]{1, 2, 3, 4});
         data.putLong("long", 42);
         data.putLongArray("longArray", new long[]{1, 2, 3, 123456789012l});
-        data.putShort("short", (short) 3);
-        data.putShortArray("shortArray", new short[]{4, 5, 6});
         data.putString("string", "Hallo Welt");
         data.putStringArray("stringArray", new String[]{"Hallo", "Welt", "bla"});
         test.setData(data);

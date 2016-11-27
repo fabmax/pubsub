@@ -1,3 +1,4 @@
+.gradle/
 .idea/
-target/
-pubsub.iml
+build/
+src/generated

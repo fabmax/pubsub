@@ -1,16 +1,30 @@
 apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'com.google.protobuf'
 
 sourceCompatibility = 1.7
-version = '1.0.1-SNAPSHOT'
+version = '1.1.0-SNAPSHOT'
 
-task fatJar(type: Jar) {
-    manifest {
-        attributes 'Implementation-Title': 'PubSub',
-                   'Implementation-Version': version
+buildscript {
+    repositories {
+        mavenCentral()
     }
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.0'
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.1.0'
+    }
+    generatedFilesBaseDir = "$projectDir/src/generated"
+}
+
+idea {
+    module {
+        sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java");
+    }
 }
 
 repositories {
@@ -18,9 +32,19 @@ repositories {
 }
 
 dependencies {
-    compile 'org.tinylog:tinylog:1.0-rc-3'
+    compile 'org.tinylog:tinylog:1.0'
     compile 'org.json:json:20140107'
-    compile 'com.google.protobuf:protobuf-java:2.6.1'
+    compile 'com.google.protobuf:protobuf-java:3.1.0'
     compile 'javax.jmdns:jmdns:3.4.1'
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'PubSub',
+                'Implementation-Version': version
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
