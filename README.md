@@ -23,6 +23,9 @@ a particular channel receive the messages published in it.
 Node server = new ServerNode();
 Node client = new ClientNode("localhost");
 
+server.open();
+client.open();
+
 // register the same channel on server and client
 Channel clientChannel = client.openChannel("test");
 Channel serverChannel = server.openChannel("test");
@@ -31,15 +34,15 @@ Channel serverChannel = server.openChannel("test");
 clientChannel.addMessageListener(new MessageListener() {
     @Override
     public void onMessageReceived(Message message) {
-        System.out.println("Client received message: [" + message.getChannelId() + ":" +
-                           message.getTopic() + "]:  " + message.getData().getString("string"));
+        Logger.info("Client received message: [" + message.getChannelId() + ":" +
+                message.getTopic() + "]:  " + message.getData().getString("string"));
     }
 });
 serverChannel.addMessageListener(new MessageListener() {
     @Override
     public void onMessageReceived(Message message) {
-        System.out.println("Server received message: [" + message.getChannelId() + ":" +
-                           message.getTopic() + "]:  " + message.getData().getString("string"));
+        Logger.info("Server received message: [" + message.getChannelId() + ":" +
+                message.getTopic() + "]:  " + message.getData().getString("string"));
     }
 });
 

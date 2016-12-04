@@ -35,9 +35,11 @@ public class MessageMapper implements MessageListener {
 
     @Override
     public void onMessageReceived(Message message) {
-        MessageMethodMapper mapper = mEndpoints.get(message.getTopic());
-        if (mapper != null && !mapper.map(message)) {
-            Logger.warn("Found method for topic but mapping failed");
+        if (message.getTopic() != null) {
+            MessageMethodMapper mapper = mEndpoints.get(message.getTopic());
+            if (mapper != null && !mapper.map(message)) {
+                Logger.warn("Found method for topic but mapping failed");
+            }
         }
     }
 

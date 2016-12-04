@@ -42,6 +42,15 @@ public class PtpMessage extends Message {
         setData(message.getData());
     }
 
+    @Override
+    public void setData(Bundle data) {
+        long from = mData.getLong(KEY_FROM_NODE);
+        long to = mData.getLong(KEY_TO_NODE);
+        data.putLong(KEY_FROM_NODE, from);
+        data.putLong(KEY_TO_NODE, to);
+        mData = data;
+    }
+
     public long getFromNodeId() {
         return mData.getLong(KEY_FROM_NODE);
     }

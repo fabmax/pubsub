@@ -153,6 +153,10 @@ public class Bundle {
         mData.put(key, new Item(type, value));
     }
 
+    public void putAll(Bundle other) {
+        mData.putAll(other.mData);
+    }
+
     public void putBoolean(String key, boolean value) {
         mData.put(key, new Item(ElementType.BOOLEAN, value));
     }
